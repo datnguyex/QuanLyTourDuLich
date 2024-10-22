@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('user_details', function (Blueprint $table) {
             $table->id(); 
-            $table->Integer('user_id')->notNull();
-            $table->string('phone', 20)->notNull(); 
-            $table->string('address', 100)->notNull(); 
-            $table->string('profile_picture', 100)->notNull(); 
-            $table->date('dob')->notNull(); 
+            $table->Integer('user_id');
+            $table->string('phone', 20)->nullable(); 
+            $table->string('address', 100)->nullable(); 
+            $table->string('profile_picture', 100)->nullable(); 
+            $table->enum('gender', ['male', 'female', 'other'])->nullable();
+            $table->date('dob')->nullable(); 
             $table->timestamps(); 
         });
     }
