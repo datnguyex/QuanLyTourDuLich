@@ -1,8 +1,9 @@
 <?php
 
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\TourController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -16,4 +17,14 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+//Api router tour
+Route::prefix('tours')->controller(TourController::class)->group(function () {
+    Route::get('list', 'index');
+    Route::get('{id}', 'show');
+    Route::put('{id}', 'update');
+    Route::delete('{id}', 'destroy');
+    Route::patch('deleteAll', 'destroyTours');
+    Route::post('/', 'store');
 });

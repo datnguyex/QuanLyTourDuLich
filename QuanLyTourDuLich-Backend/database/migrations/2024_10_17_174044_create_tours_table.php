@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('tours', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 100); 
-            $table->text('description')->nullable(); 
+            $table->string('name', 100);
+            $table->text('description')->nullable();
             $table->string('duration', 100);
-            $table->Integer('price'); 
-            $table->date('start_date'); 
-            $table->date('end_date'); 
-            $table->string('location', 100); 
-            $table->date('availability'); 
-            $table->longText('image'); 
+            $table->Integer('price');
+            $table->date('start_date');
+            $table->date('end_date');
+            $table->string('location', 100);
+            $table->boolean('availability');
+            $table->string('image', 2048);
             $table->timestamps();
         });
     }
