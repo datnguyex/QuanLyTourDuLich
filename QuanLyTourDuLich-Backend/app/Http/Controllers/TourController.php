@@ -151,7 +151,7 @@ class TourController extends Controller
                 "message" => "Destroy successfully",
             ], 200);
         } catch (\Exception $e) {
-            //Write bug on file log
+            // Write bug on file log
             Log::error("Error destroy tour". $e->getMessage());
             return response()->json([
                 "message" => "Something Went Wrong",
