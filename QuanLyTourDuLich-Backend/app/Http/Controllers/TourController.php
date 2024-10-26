@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Tour;
+use App\Models\Images;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
+use Storage;
+use File;
 
 class TourController extends Controller
 {
@@ -54,16 +57,35 @@ class TourController extends Controller
                 'start_date' => 'required|date',
                 'end_date' => 'required|date|after:start_date',
                 'location' => 'required|string',
-                'availability' => 'required',
-                'image' => 'required|string|max:2048',
             ]);
+
+
+            // Handle file uploads
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $imageRecord = Images::create([
+                        'tour_id' => 1,
+                        'image_url' => $image->store('images', 'public'),
+                        'alt_text' => $request->input('alt_text', 'Default alt text'),
+                    ]);
+                    // http://127.0.0.1:8000/storage/images/7B9dDErH16ywJWIhieXV9sRYitUb0dC5qNgJ0jCo.png
+                }
+            }
 
             $tour = Tour::create($validatedData);
 
+            if($imageRecord && $tour){
+                return response()->json([
+                    'message' => "Tour successfully created",
+                    // 'tour' => $tour
+                ], 200);
+            }
+
             return response()->json([
-                'message' => "Tour successfully created",
-                'tour' => $tour
-            ], 201);
+                'message' => "something really wrong",
+            ], 500);
+
+
         } catch (\Exception $e) {
             // Ghi lỗi vào file log
             Log::error('Error creating tour: ' . $e->getMessage());
@@ -106,8 +128,6 @@ class TourController extends Controller
                 'start_date' => 'required|date',
                 'end_date' => 'required|date|after:start_date',
                 'location' => 'required|string',
-                'availability' => 'required',
-                'image' => 'required|string|max:2048',
             ]);
 
             // Update tour

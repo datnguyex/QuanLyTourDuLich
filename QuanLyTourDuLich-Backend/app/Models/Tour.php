@@ -20,7 +20,6 @@ class Tour extends Model
         'end_date',
         'location',
         'availability',
-        'image',
     ];
 
 

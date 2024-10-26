@@ -20,8 +20,7 @@ return new class extends Migration
             $table->date('start_date');
             $table->date('end_date');
             $table->string('location', 100);
-            $table->boolean('availability');
-            $table->string('image', 2048);
+            $table->boolean('availability')->nullable();
             $table->timestamps();
         });
     }
