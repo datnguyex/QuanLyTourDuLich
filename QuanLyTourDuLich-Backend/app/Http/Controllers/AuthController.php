@@ -13,6 +13,7 @@ use Illuminate\Mail\SentMessage;
 use Twilio\Rest\Client;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidDateException;
+use Illuminate\Support\Facades\Auth;    
 class AuthController extends Controller
 {
     public function user()
@@ -116,10 +117,10 @@ class AuthController extends Controller
                 }
              
                 try {
-                    // Mail::send('emails.test', compact('code'), function($email) use ($validatedData, $code) {
-                    //     $email->subject('Demo test mail');
-                    //     $email->to($validatedData['username'], $code);
-                    // });
+                    Mail::send('emails.test', compact('code'), function($email) use ($validatedData, $code) {
+                        $email->subject('Demo test mail');
+                        $email->to($validatedData['username'], $code);
+                    });
                 
                     // Kiểm tra và xóa bản ghi cũ
                     $verification = VerifyRegister::where('username', $validatedData['username'])->first();
@@ -273,4 +274,106 @@ class AuthController extends Controller
             ], 200);
         }
     }
+    public function login(Request $request) {
+        try {
+            $validatedData = $request->validate([
+                'username' => 'required|string|max:255|min:10|regex:/^\S*$/',
+                'password' => 'required|string|min:8|max:30|regex:/[a-z]/|regex:/[A-Z]/|regex:/[0-9]/|',
+                'role' => 'required|in:1,2,3',
+            ], [
+                'username.required' => 'Account Name required',
+                'username.max' => 'Account must be between 10 and 255 characters',
+                'username.min' => 'Account must be between 10 and 255 characters',
+                'username.regex' => 'Account can not contain spaces',
+                'password.required' => 'Password required.',
+                'password.max' => 'The password must be between 8 and 30 characters.',
+                'password.min' => 'The password must be between 8 and 30 characters.',
+                'password.regex' => 'The password must include at least one uppercase letter, one lowercase letter, one number, and one special character.',
+                'role.required' => 'Choose your permission.',
+                'role.in' => 'Invalid permission.',
+            ]);
+
+            $username = $validatedData['username'];
+            $totalChars = strlen($username);
+            $digitCount = preg_match_all('/[0-9]/', $username);
+            
+            if ($totalChars > 0 && ($digitCount / $totalChars) >= 0.8) {
+                if (!$this->isValidPhoneNumber($validatedData['username'])) {
+                    return response()->json([
+                        'message' => 'Validation failed',
+                        'errors' => [
+                            'username' => ['Phone number must be formatted as follows: 0123456789 or +84123456789.'],
+                        ],
+                    ], 422);
+                }
+
+             
+            } else {
+                if (!$this->isValidEmail($validatedData['username'])) {
+                    return response()->json([
+                        'message' => 'Validation failed',
+                        'errors' => [
+                            'username' => ['Email must be formatted as follows: abc@gmail.com.']
+                        ],
+                ], 422);
+            }
+            }
+
+            if (preg_match('/\s/', $validatedData['password'])) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => [
+                        'password' => ['The password must not contain spaces.']
+                    ]
+                ], 422);
+            }
+    
+            if(!Auth::attempt($request->only('username','password','role'))) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => [
+                        'username' => ['Account name not found.']
+                    ]
+                ], 422);
+             } else {
+                 $user = Auth::user();
+                 $token = $user->createToken('token')->plainTextToken;
+                //  $secretKey = 'dat123';
+                //  $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
+                //  $encryptedToken = openssl_encrypt($token, 'aes-256-cbc', $secretKey, 0, $iv);
+                //  $encryptedToken = base64_encode($iv . $encryptedToken);
+                 return response([
+                     'message' => 'login sussesfully',
+                     'token' => $token,
+                     'user' => $user,
+                   ],200);
+                }
+    
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->validator->errors(),
+            ], 422);
+        }
+
+       
+    }   
+    public function inforCurrentUser(Request $request) {
+        try {
+            $user = Auth::user();
+    
+            if ($user) {
+                return response()->json([
+                    'message' => 'Get data successfully',
+                    'data' => $user,
+                ], 200);
+            } 
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'User not found',
+                'error' => $e->getMessage(), 
+            ], 500);
+        }
+    }
+    
 }

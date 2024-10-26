@@ -19,6 +19,10 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
 });
 Route::post('login', [AuthController::class,'login']);
+Route::middleware('auth:sanctum')->group(function(){
+    Route::get('inforCurrentUser', [AuthController::class,'inforCurrentUser']);
+});
+
 Route::post('RegistermoreInfomation', [AuthController::class,'RegistermoreInfomation']);
 Route::post('sendCode', [AuthController::class,'sendCode']);
 Route::post('registerMainInfo', [AuthController::class,'registerMainInfo']);
