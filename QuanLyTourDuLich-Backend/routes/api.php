@@ -26,15 +26,15 @@ Route::prefix('tours')->controller(TourController::class)->group(function () {
     Route::post('/', 'store');
 });
 
-Route::post('login', [AuthController::class,'login']);
+Route::post('login',[AuthController::class,'login']);
 Route::middleware('auth:sanctum')->group(function(){
     Route::get('inforCurrentUser', [AuthController::class,'inforCurrentUser']);
 });
-
 Route::post('RegistermoreInfomation', [AuthController::class,'RegistermoreInfomation']);
 Route::post('sendCode', [AuthController::class,'sendCode']);
 Route::post('registerMainInfo', [AuthController::class,'registerMainInfo']);
 Route::post('mainInformation', [AuthController::class,'mainInformation']);
+//
 Route::get('user', [AuthController::class, 'user']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);

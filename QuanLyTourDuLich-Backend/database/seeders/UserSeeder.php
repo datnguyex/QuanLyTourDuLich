@@ -23,8 +23,7 @@ class UserSeeder extends Seeder
            
         ]);
 
-        User::create([
-            
+        User::create([       
             'name' => 'Trần Thị B',
             'username' => 'tranthib',
             'password' => bcrypt('password456'), // Mật khẩu được mã hóa
@@ -39,6 +38,11 @@ class UserSeeder extends Seeder
             'password' => bcrypt('password789'), // Mật khẩu được mã hóa
             'role' => 3, // Role là 3
             
+        ]);
+        User::create([
+            'username' => 'test@gmail.com',
+            'password' => Hash::make('Dat72@@##!!1'), 
+            'role' => 1,
         ]);
     }
 }
