@@ -247,4 +247,28 @@ class TourController extends Controller
             ], 500);
         }
     }
+    // hien thi tour moi nhat
+    public function displayNewstTour(Request $request) {
+        try {
+            $newstTour = tour::orderBy('created_at','desc')->get();
+            if($newstTour->isEmpty()) {
+                return response()->json([
+                    "message" => "Tour not found",
+                ], 404);
+            } else {
+                return response()->json([
+                    "message" => "get tour successfully",
+                    "data" => $newstTour,
+                ], 200);
+            }
+          
+        }catch (QueryException $e) {
+            return response()->json([
+                "message" => "Đã xảy ra lỗi",
+                "error" => $e->getMessage() 
+            ], 500);
+        }
+        
+    }
+    
 }
