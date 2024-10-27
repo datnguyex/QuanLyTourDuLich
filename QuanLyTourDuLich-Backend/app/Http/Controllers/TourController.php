@@ -250,6 +250,7 @@ class TourController extends Controller
     // hien thi tour moi nhat
     public function displayNewstTour(Request $request) {
         try {
+            
             $newstTour = tour::orderBy('created_at','desc')->get();
             if($newstTour->isEmpty()) {
                 return response()->json([
@@ -262,13 +263,18 @@ class TourController extends Controller
                 ], 200);
             }
           
-        }catch (QueryException $e) {
+        }
+        catch (\Exception $e) {
             return response()->json([
-                "message" => "Đã xảy ra lỗi",
-                "error" => $e->getMessage() 
+                "message" => "Đã xảy ra lỗi không xác định",
+                "error" => $e->getMessage()
             ], 500);
         }
-        
+      catch (QueryException $e) {
+        return response()->json([
+            "message" => "Lỗi truy vấn cơ sở dữ liệu",
+            "error" => $e->getMessage()
+        ], 500);
     }
-    
+}
 }

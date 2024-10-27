@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TourController;
+use App\Http\Controllers\FavoriteController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -28,6 +29,7 @@ Route::prefix('tours')->controller(TourController::class)->group(function () {
 });
 
 //
+Route::post('addTourToFavorite',[FavoriteController::class,'addTourToFavorite']);
 Route::get('displayNewstTour',[TourController::class,'displayNewstTour']);
 Route::post('login',[AuthController::class,'login']);
 Route::middleware('auth:sanctum')->group(function(){
