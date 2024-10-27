@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->integer('tour_id');
-            $table->date('time');
+            $table->dateTime('time');
             $table->timestamps();
         });
     }

@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Tour;
 use App\Models\Images;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Hash;
+use App\Models\Schedule;
 use Storage;
 use File;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
+
 
 class TourController extends Controller
 {
@@ -49,6 +51,7 @@ class TourController extends Controller
      public function store(Request $request)
      {
         try {
+            //Make vaildate for variable
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
                 'description' => 'required|string',
@@ -57,14 +60,30 @@ class TourController extends Controller
                 'start_date' => 'required|date',
                 'end_date' => 'required|date|after:start_date',
                 'location' => 'required|string',
+                'images.*' => 'required|file|image|mimes:png,jpg,svg',
+                'schedules' => 'required',
             ]);
 
+            $tour = Tour::create($validatedData);
+
+            //Get array schedules
+            $schedules = json_decode($validatedData['schedules'], true);
+            // $scheduleData = json_decode($schedules, true);
+            foreach($schedules as $item) {
+                //Change string json into array
+                // $scheduleData = json_decode($item, true);
+                $schedule = Schedule::create([
+                    'name' => $item['name_schedule'],
+                    'time' => $item['time_schedule'],
+                    'tour_id' => $tour->id,
+                ]);
+            }
 
             // Handle file uploads
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $image) {
-                    $imageRecord = Images::create([
-                        'tour_id' => 1,
+                    $image = Images::create([
+                        'tour_id' => $tour->id,
                         'image_url' => $image->store('images', 'public'),
                         'alt_text' => $request->input('alt_text', 'Default alt text'),
                     ]);
@@ -72,18 +91,13 @@ class TourController extends Controller
                 }
             }
 
-            $tour = Tour::create($validatedData);
-
-            if($imageRecord && $tour){
-                return response()->json([
-                    'message' => "Tour successfully created",
-                    // 'tour' => $tour
-                ], 200);
-            }
-
             return response()->json([
-                'message' => "something really wrong",
-            ], 500);
+                'message' => "Tour successfully created",
+                'tour' => $tour,
+                'image' => $image,
+                'schedule' => $schedule,
+            ], 200);
+
 
 
         } catch (\Exception $e) {
