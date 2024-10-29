@@ -12,14 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('bookings', function (Blueprint $table) {
-            $table->id(); 
+            $table->id();
             $table->Integer('tour_id');
             $table->Integer('customer_id');
             $table->date('booking_date');
-            $table->integer('number_of_people');
-            $table->Integer('user_id'); 
-            $table->Integer('tour_guide_id'); 
-            $table->timestamps(); 
+            $table->integer('number_of_tikers');
+            $table->Integer('user_id');
+            $table->Integer('tour_guide_id');
+            $table->timestamps();
         });
     }
 

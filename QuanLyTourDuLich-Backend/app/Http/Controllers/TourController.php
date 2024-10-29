@@ -32,7 +32,7 @@ class TourController extends Controller
     public function index()
     {
         try {
-            $tours = Tour::all();
+            $tours = Tour::with('images')->get();
             return response()->json([
                 'tours' => $tours
             ], 200);
@@ -116,13 +116,19 @@ class TourController extends Controller
       * @param \Illuminate\Http\Request $request
       * @return mixed|\Illuminate\Http\JsonResponse
       */
+    /**
+ * Update tour
+ * @param \Illuminate\Http\Request $request
+ * @param int $id
+ * @return mixed|\Illuminate\Http\JsonResponse
+ */
     public function update(Request $request, $id)
     {
+        // dd($request);
         try {
-
             // Find tour to update
             $tour = Tour::find($id);
-
+            // dd($tour);
             // Check if tour exists
             if (!$tour) {
                 return response()->json([
@@ -130,10 +136,7 @@ class TourController extends Controller
                 ], 404);
             }
 
-            /**
-             * @var mixed
-             * Make validate for a tour
-             */
+            // Validate data
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
                 'description' => 'required|string',
@@ -142,15 +145,49 @@ class TourController extends Controller
                 'start_date' => 'required|date',
                 'end_date' => 'required|date|after:start_date',
                 'location' => 'required|string',
+                'images.*' => 'file|image|mimes:png,jpg,svg',
+                'schedules' => 'required',
             ]);
 
             // Update tour
             $tour->update($validatedData);
 
+            // Update schedules if provided
+            if ($request->has('schedules')) {
+                // Delete existing schedules
+                $tour->schedules()->delete();
+
+                // Get array of new schedules
+                $schedules = json_decode($validatedData['schedules'], true);
+                foreach ($schedules as $item) {
+                    Schedule::create([
+                        'name' => $item['name_schedule'],
+                        'time' => $item['time_schedule'],
+                        'tour_id' => $tour->id,
+                    ]);
+                }
+            }
+
+            // Handle file uploads
+            if ($request->hasFile('images')) {
+                // Delete existing images
+                $tour->images()->delete();
+
+                // Upload new images
+                foreach ($request->file('images') as $image) {
+                    Images::create([
+                        'tour_id' => $tour->id,
+                        'image_url' => $image->store('images', 'public'),
+                        'alt_text' => $request->input('alt_text', 'Default alt text'),
+                    ]);
+                }
+            }
+
             return response()->json([
                 'message' => "Tour successfully updated",
                 'tour' => $tour
             ], 200);
+
         } catch (\Exception $e) {
             // Log the error
             Log::error('Error updating tour: ' . $e->getMessage());
@@ -243,7 +280,7 @@ class TourController extends Controller
         //     dd($hashedId);
         // // }
         try {
-            $tour = tour::find($id);
+            $tour = Tour::with('images', 'schedules')->find($id);
             //Check if tour not exits
             if (!$tour) {
                 return response()->json([
@@ -258,6 +295,154 @@ class TourController extends Controller
             return response()->json([
                 "message"=> "Something Went Wrong",
                 "error"=> $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Look for tour with location
+     * @param mixed $query
+     * @param mixed $location
+     * @return mixed
+     */
+    public function findByLocation($location)
+    {
+        try {
+            $results = Tour::findByLocation($location)->get();
+            // Check if results are found
+            if ($results->isEmpty()) {
+                return response()->json([
+                    'message' => 'Tour Not Foud.'
+                ], 404);
+            }
+
+            // Return the results
+            return response()->json($results, 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Display tour with category
+     * @param \Illuminate\Http\Request $request
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
+    public function findByCategory($category)
+    {
+        // Validate the incoming request
+        try {
+            // Use the scope method to find tours by category
+            $results = Tour::findByCategory($category)->get();
+
+            // Check if results are found
+            if ($results->isEmpty()) {
+                return response()->json([
+                    'message' => 'No tours found for this category.'
+                ], 404);
+            }
+
+            // Return the results
+            return response()->json($results, 200);
+
+        } catch (\Exception $e) {
+            // Handle any other exceptions
+            return response()->json([
+                'message' => 'An error occurred while processing your request.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Method get count tour upload
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
+    public function countTours()
+    {
+        try {
+            // Lấy số lượng tour đã đăng
+            $count = Tour::count();
+            // Trả về số lượng tour
+            return response()->json([
+                'count' => $count
+            ], 200);
+
+        } catch (\Exception $e) {
+            // Xử lý lỗi và trả về thông báo
+            return response()->json([
+                'message' => 'An error occurred while counting tours.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Method update stutus
+     * @param mixed $tatus
+     * @param mixed $id
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
+    public function updateStatus($tatus, $id)
+    {
+
+        try {
+            //Check tour not foud
+            $tour = Tour::findOrFail($id);
+            // Check if results are found
+            if ($tour->isEmpty()) {
+                return response()->json([
+                    'message' => 'No tours found.'
+                ], 404);
+            }
+            $tour->availability = $tatus;
+            $tour->save();
+
+            return response()->json([
+                'message' => 'Tour status updated successfully.',
+                'tour' => $tour
+            ], 200);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Tour not found.',
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'An error occurred while updating tour status.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function sortTours(Request $request)
+    {
+        $sortBy = $request->query('sort', 'price');
+        try {
+            $tours = Tour::query();
+            // Sắp xếp theo tiêu chí
+            switch ($sortBy) {
+                case 'price':
+                    $tours->orderBy('price', 'desc');
+                    break;
+                case 'latest':
+                    $tours->orderBy('created_at', 'desc');
+                    break;
+                default:
+                    return response()->json(['message' => 'Invalid sort parameter.'], 400);
+            }
+
+            $results = $tours->get();
+            return response()->json($results, 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'An error occurred while sorting tours.',
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
