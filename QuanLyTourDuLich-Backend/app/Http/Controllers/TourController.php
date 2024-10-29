@@ -250,31 +250,68 @@ class TourController extends Controller
     // hien thi tour moi nhat
     public function displayNewstTour(Request $request) {
         try {
+            $newstTour = tour::orderBy('created_at', 'desc')->get();
             
-            $newstTour = tour::orderBy('created_at','desc')->get();
-            if($newstTour->isEmpty()) {
+            if ($newstTour->isEmpty()) {
                 return response()->json([
                     "message" => "Tour not found",
                 ], 404);
             } else {
                 return response()->json([
-                    "message" => "get tour successfully",
+                    "message" => "Get tour successfully",
                     "data" => $newstTour,
                 ], 200);
             }
           
-        }
-        catch (\Exception $e) {
+        } catch (QueryException $e) {
+            return response()->json([
+                "message" => "Lỗi truy vấn cơ sở dữ liệu",
+                "error" => $e->getMessage()
+            ], 500);
+        } catch (\Exception $e) {
             return response()->json([
                 "message" => "Đã xảy ra lỗi không xác định",
                 "error" => $e->getMessage()
             ], 500);
         }
-      catch (QueryException $e) {
-        return response()->json([
-            "message" => "Lỗi truy vấn cơ sở dữ liệu",
-            "error" => $e->getMessage()
-        ], 500);
     }
-}
+    //dat tour
+    public function BookTour(Request $request) {
+
+    }
+    //xem chi tiet tour
+    public function TourDetail(Request $request) {
+        try {
+            $validatedData = $request->validate([
+                'tour_id' => 'required|exists:tours,id', 
+            ], [
+                'tour_id.required' => 'Tour ID is required.', 
+                'tour_id.exists' => 'The specified tour does not exist.'
+            ]);
+    
+            $tourDetail = Tour::find($validatedData['tour_id']); 
+            
+            if ($tourDetail) {
+                return response()->json([
+                    "message" => "Get tour successful",
+                    'data' => $tourDetail,
+                ], 200);
+            } else {
+                return response()->json([
+                    "message" => "Get tour not successful",
+                ], 404);
+            }      
+        } catch (ValidationException $e) {
+            return response()->json([
+                "message" => "An error occurred",
+                "error" => $e->getMessage() 
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => "An unexpected error occurred",
+                "error" => $e->getMessage() 
+            ], 500);
+        }  
+    }
+    
 }

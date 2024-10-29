@@ -30,6 +30,7 @@ Route::prefix('tours')->controller(TourController::class)->group(function () {
 
 //
 Route::post('addTourToFavorite',[FavoriteController::class,'addTourToFavorite']);
+Route::get('TourDetail',[TourController::class,'TourDetail']);
 Route::get('displayNewstTour',[TourController::class,'displayNewstTour']);
 Route::post('login',[AuthController::class,'login']);
 Route::middleware('auth:sanctum')->group(function(){
