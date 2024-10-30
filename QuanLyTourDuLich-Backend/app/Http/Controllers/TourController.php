@@ -68,7 +68,6 @@ class TourController extends Controller
 
             //Get array schedules
             $schedules = json_decode($validatedData['schedules'], true);
-            // $scheduleData = json_decode($schedules, true);
             foreach($schedules as $item) {
                 //Change string json into array
                 // $scheduleData = json_decode($item, true);
@@ -82,13 +81,17 @@ class TourController extends Controller
             // Handle file uploads
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $image) {
+                    $path = $image->getClientOriginalName();
+                    Storage::disk('public')->put($path, File::get($image));
                     $image = Images::create([
                         'tour_id' => $tour->id,
-                        'image_url' => $image->store('images', 'public'),
+                        'image_url' => $path,
                         'alt_text' => $request->input('alt_text', 'Default alt text'),
                     ]);
-                    // http://127.0.0.1:8000/storage/images/7B9dDErH16ywJWIhieXV9sRYitUb0dC5qNgJ0jCo.png
+
+                    // http://127.0.0.1:8000/images/7B9dDErH16ywJWIhieXV9sRYitUb0dC5qNgJ0jCo.png
                 }
+
             }
 
             return response()->json([
