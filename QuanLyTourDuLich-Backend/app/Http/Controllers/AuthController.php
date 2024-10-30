@@ -297,18 +297,18 @@ class AuthController extends Controller
             $totalChars = strlen($username);
             $digitCount = preg_match_all('/[0-9]/', $username);
             
-            if ($totalChars > 0 && ($digitCount / $totalChars) >= 0.8) {
-                if (!$this->isValidPhoneNumber($validatedData['username'])) {
-                    return response()->json([
-                        'message' => 'Validation failed',
-                        'errors' => [
-                            'username' => ['Phone number must be formatted as follows: 0123456789 or +84123456789.'],
-                        ],
-                    ], 422);
-                }
+            // if ($totalChars > 0 && ($digitCount / $totalChars) >= 0.8) {
+            //     if (!$this->isValidPhoneNumber($validatedData['username'])) {
+            //         return response()->json([
+            //             'message' => 'Validation failed',
+            //             'errors' => [
+            //                 'username' => ['Phone number must be formatted as follows: 0123456789 or +84123456789.'],
+            //             ],
+            //         ], 422);
+            //     }
 
              
-            } else {
+            // } else {
                 if (!$this->isValidEmail($validatedData['username'])) {
                     return response()->json([
                         'message' => 'Validation failed',
@@ -317,7 +317,7 @@ class AuthController extends Controller
                         ],
                 ], 422);
             }
-            }
+            // }
 
             if (preg_match('/\s/', $validatedData['password'])) {
                 return response()->json([
@@ -345,7 +345,7 @@ class AuthController extends Controller
                  return response([
                      'message' => 'login sussesfully',
                      'token' => $token,
-                     'user' => $user,
+                    //  'user' => $user,
                    ],200);
                 }
     
@@ -354,6 +354,12 @@ class AuthController extends Controller
                 'message' => 'Validation failed',
                 'errors' => $e->validator->errors(),
             ], 422);
+        }
+        catch (Exception $e) {
+            return response()->json([
+                'message' => 'An error occurred.',
+                'error' => $e->getMessage(),
+            ], 500);
         }
 
        
