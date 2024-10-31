@@ -69,7 +69,7 @@ class AuthController extends Controller
                 return response()->json([
                     'message' => 'Validation failed',
                     'errors' => [
-                        'username' => 'this account already exits in the system'
+                        'username' => ['this account already exits in the system']
                     ],
                 ], 422);
             }
@@ -80,33 +80,34 @@ class AuthController extends Controller
             $totalChars = strlen($username);
             $digitCount = preg_match_all('/[0-9]/', $username);
             
-            if ($totalChars > 0 && ($digitCount / $totalChars) >= 0.8) {
-                if (!$this->isValidPhoneNumber($validatedData['username'])) {
-                    return response()->json([
-                        'message' => 'Validation failed',
-                        'errors' => [
-                            'username' => ['Phone number must be formatted as follows: 0123456789 or +84123456789.'],
-                        ],
-                    ], 422);
-                }
+            // if ($totalChars > 0 && ($digitCount / $totalChars) >= 0.8) {
+            //     if (!$this->isValidPhoneNumber($validatedData['username'])) {
+            //         return response()->json([
+            //             'message' => 'Validation failed',
+            //             'errors' => [
+            //                 'username' => ['Phone number must be formatted as follows: 0123456789 or +84123456789.'],
+            //             ],
+            //         ], 422);
+            //     }
 
-                $phoneNumber = '0' . substr($username, 3);
-                $phoneNumber2 = '+84' . substr($username, 1);
-                $users = User::all();
+            //     $phoneNumber = '0' . substr($username, 3);
+            //     $phoneNumber2 = '+84' . substr($username, 1);
+            //     $users = User::all();
 
-                foreach ($users as $user) {
-                    if ($user->username == $phoneNumber || $user->username == $phoneNumber2) {
-                        return response()->json([
-                            'message' => 'Validation failed',
-                            'errors' => [
-                                'username' => 'Phone number already exists.'
-                            ],
-                        ], 422);
-                    }
-                }
+            //     foreach ($users as $user) {
+            //         if ($user->username == $phoneNumber || $user->username == $phoneNumber2) {
+            //             return response()->json([
+            //                 'message' => 'Validation failed',
+            //                 'errors' => [
+            //                     'username' => 'Phone number already exists.'
+            //                 ],
+            //             ], 422);
+            //         }
+            //     }
 
                
-            } else {
+            // }
+            //  else {
                 if (!$this->isValidEmail($validatedData['username'])) {
                     return response()->json([
                         'message' => 'Validation failed',
@@ -132,7 +133,8 @@ class AuthController extends Controller
                             'verification_code' => $code,
                         ]);
                       
-                } catch (\Exception $e) {
+                } 
+                catch (\Exception $e) {
                     return response()->json([
                         'errors' => [
                             'mail' => 'Cannot send email'
@@ -140,7 +142,7 @@ class AuthController extends Controller
                     ], 422);
                 }
                 
-            }
+            // }
 
  
             return response()->json([
@@ -160,7 +162,7 @@ class AuthController extends Controller
             $validatedData = $request->validate([
                 'confirmCode' => 'required|string|max:5|min:5|regex:/^\d+$/',
             ], [
-                'confirmCode.required' => 'Confirmation code required', // Sửa lỗi chính tả
+                'confirmCode.required' => 'Confirmation code required', 
                 'confirmCode.max' => 'The confirmation code must be exactly 5 characters long',
                 'confirmCode.min' => 'The confirmation code must be exactly 5 characters long',
                 'confirmCode.regex' => 'Only numeric characters are allowed',
@@ -181,17 +183,17 @@ class AuthController extends Controller
             // }
     
             // Kiểm tra mã xác minh
-            if ($verification->verification_code == $code) {
+            if ($verification->verification_code != $code) {
+                return response()->json([
+                    'errors' => [
+                        'confirmCode' => ['Re-enter confirmation code']
+                    ],
+                ], 401);
+            } else {
                 $verification->delete();
                 return response()->json([
                     'message' => 'Valid confirmation code',
                     'swicth' => 'more infomation'
-                ], 201);
-            } else {
-                return response()->json([
-                    'message' => 'Re-enter confirmation code',
-                    // 'verification' => $verification->verification_code,
-                    // 'code' => $code,
                 ], 201);
             }
         } catch (ValidationException $e) {
@@ -228,9 +230,9 @@ class AuthController extends Controller
             if($dateStringz != $dateString) {
                 return response()->json([
                     'errors' => [
-                        'day' => 'Invalid day',
-                        'month' => 'Invalid month',
-                        'year' => 'Invalid year',
+                        'day' => ['Invalid day'],
+                        'month' => ['Invalid month'],
+                        'year' => ['Invalid year'],
                     ],
                 ], 422);
             }
@@ -259,7 +261,7 @@ class AuthController extends Controller
                 'message' => 'Validation faied',
                 'errors' => $e->validator->errors(),
             ], 422);
-        }
+        }       
     }
     public function registerMainInfo(Request $request) {
         $mainInfo = User::create([
@@ -267,10 +269,14 @@ class AuthController extends Controller
             'password' => hash::make($request->password),
             'role' => $request->role,
         ]);
-        if($mainInfo) {
+        $mainInfoDetail = UserDetail::create([
+            'user_id' => $mainInfo->id,
+        ]);
+        if($mainInfo && $mainInfoDetail) {
             return response()->json([
                 'message' => 'created account',
                 'data1' => $mainInfo,
+                'data1' => $mainInfoDetail,
             ], 200);
         }
     }
