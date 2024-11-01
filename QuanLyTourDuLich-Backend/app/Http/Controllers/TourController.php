@@ -15,13 +15,30 @@ use Illuminate\Support\Facades\Hash;
 class TourController extends Controller
 {
     /**
-     * Encode data to JSON
-     * @param $data
-     * @return string
-     */
-    protected function jsonEncode($id)
+      *  Hàm mã hóa
+      * @param mixed $id
+      * @return string
+      */
+    public function encrypt($id)
     {
-        return json_encode($id);
+        $secretKey = env('SECRET_KEY', 'tourtravelstore');
+        $cipher = 'AES-256-CBC';
+        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($cipher));
+
+        // Mã hóa ID
+        $encrypted = openssl_encrypt($id, $cipher, $secretKey, 0, $iv);
+
+        // Trả về mã hóa kèm IV để giải mã sau này
+        return base64_encode($encrypted . '::' . $iv);
+    }
+
+    public function decrypt($data)
+    {
+        $secretKey = env('SECRET_KEY', 'tourtravelstore');
+        $cipher = 'AES-256-CBC';
+
+        list($encryptedData, $iv) = explode('::', base64_decode($data), 2);
+        return openssl_decrypt($encryptedData, $cipher, $secretKey, 0, $iv);
     }
 
 
@@ -29,12 +46,39 @@ class TourController extends Controller
      * Get tours
      * @return mixed|\Illuminate\Http\JsonResponse
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $tours = Tour::with('images')->get();
+            $perPage = $request->input('per_page', 10);
+            $tours = Tour::with('images', 'schedules')->paginate($perPage);
+            // Tạo mảng tour tùy chỉnh
+            $toursArray = $tours->getCollection()->map(function ($tour) {
+                return [
+                    'id' => encrypt($tour->id), // Hoặc trường khác bạn muốn
+                    'title' => $tour->title,
+                    'description' => $tour->description,
+                    'duration' => $tour->duration,
+                    'price' => $tour->price,
+                    'start_date' => $tour->start_date,
+                    'end_date' => $tour->end_date,
+                    'location' => $tour->location,
+                    'availability' => $tour->availability,
+                    'images' => $tour->images,
+                    'schedules' => $tour->schedules
+                ];
+            });
             return response()->json([
-                'tours' => $tours
+                'tours' => $toursArray,
+                'links' => [
+                    'next' => $tours->nextPageUrl(),
+                    'prev' => $tours->previousPageUrl(),
+                ],
+                'meta' => [
+                    'current_page' => $tours->currentPage(), // Phương thức currentPage()
+                    'last_page' => $tours->lastPage(),
+                    'per_page' => $tours->perPage(),
+                    'total' => $tours->total(),
+                ]
             ], 200);
         }catch(\Exception $e){
             return response()->json([
@@ -69,8 +113,6 @@ class TourController extends Controller
             //Get array schedules
             $schedules = json_decode($validatedData['schedules'], true);
             foreach($schedules as $item) {
-                //Change string json into array
-                // $scheduleData = json_decode($item, true);
                 $schedule = Schedule::create([
                     'name' => $item['name_schedule'],
                     'time' => $item['time_schedule'],
@@ -81,14 +123,13 @@ class TourController extends Controller
             // Handle file uploads
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $image) {
-                    $path = $image->getClientOriginalName();
+                    $path = time() . '_' . $image->getClientOriginalName();
                     Storage::disk('public')->put($path, File::get($image));
                     $image = Images::create([
                         'tour_id' => $tour->id,
                         'image_url' => $path,
                         'alt_text' => $request->input('alt_text', 'Default alt text'),
                     ]);
-
                     // http://127.0.0.1:8000/images/7B9dDErH16ywJWIhieXV9sRYitUb0dC5qNgJ0jCo.png
                 }
 
@@ -114,24 +155,18 @@ class TourController extends Controller
         }
      }
 
-     /**
-      * Update tour
-      * @param \Illuminate\Http\Request $request
-      * @return mixed|\Illuminate\Http\JsonResponse
-      */
+
     /**
- * Update tour
- * @param \Illuminate\Http\Request $request
- * @param int $id
- * @return mixed|\Illuminate\Http\JsonResponse
- */
-    public function update(Request $request, $id)
+     * Update tour
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
+    public function update(Request $request, $hashId)
     {
-        // dd($request);
         try {
-            // Find tour to update
-            $tour = Tour::find($id);
-            // dd($tour);
+            $id = decrypt($hashId); // Decrypt the hash ID
+            $tour = Tour::with('images', 'schedules')->find($id);
             // Check if tour exists
             if (!$tour) {
                 return response()->json([
@@ -170,17 +205,26 @@ class TourController extends Controller
                     ]);
                 }
             }
-
+            $uploadedImages = [];
             // Handle file uploads
             if ($request->hasFile('images')) {
-                // Delete existing images
-                $tour->images()->delete();
-
+                //Delete tour exitting
+                $images = $tour->images;
+                foreach($images as $image){
+                    $filePath = public_path('/images/' . $image->image_url);
+                    if (file_exists($filePath)) {
+                        unlink($filePath);
+                    }
+                    $image->delete();
+                }
                 // Upload new images
                 foreach ($request->file('images') as $image) {
+                    $path = time() . '_' . $image->getClientOriginalName();
+                    Storage::disk('public')->put($path, File::get($image));
+                    $uploadedImages[] =  $image;
                     Images::create([
                         'tour_id' => $tour->id,
-                        'image_url' => $image->store('images', 'public'),
+                        'image_url' => $path,
                         'alt_text' => $request->input('alt_text', 'Default alt text'),
                     ]);
                 }
@@ -188,7 +232,10 @@ class TourController extends Controller
 
             return response()->json([
                 'message' => "Tour successfully updated",
-                'tour' => $tour
+                'tour' => $tour,
+                'image' => $uploadedImages,
+                'schedules' => $schedules,
+                'id' => encrypt($tour->id), // Updated to encrypt the tour ID
             ], 200);
 
         } catch (\Exception $e) {
@@ -207,25 +254,26 @@ class TourController extends Controller
      * @param mixed $id
      * @return mixed|\Illuminate\Http\JsonResponse
      */
-    public function destroy($id)
+    public function destroy($hashId)
     {
         try {
-            $tour = tour::find($id);
-            //check if tour exist
+            $id = decrypt($hashId); // Decrypt the hash ID
+            $tour = Tour::find($id);
+            // Check if tour exists
             if (!$tour) {
                 return response()->json([
                     "message" => "Tour not found",
                 ], 404);
             }
 
-            //Delete tour
+            // Delete tour
             $tour->delete();
 
             return response()->json([
                 "message" => "Destroy successfully",
             ], 200);
         } catch (\Exception $e) {
-            //Write bug on file log
+            // Write bug on file log
             Log::error("Error destroy tour". $e->getMessage());
             return response()->json([
                 "message" => "Something Went Wrong",
@@ -242,16 +290,15 @@ class TourController extends Controller
     public function destroyTours(Request $request)
     {
         try {
-            $tours = Tour::whereIn('id', $request)->get();
-            // dd($tours);
-            //Check if tour not exits
-            if (count($tours) == 0) {
+            $tours = Tour::whereIn('id', $request->input('ids'))->get(); // Assuming 'ids' is the key in the request
+            // Check if tour not exists
+            if ($tours->isEmpty()) {
                 return response()->json([
                     "message" => "Tour not found",
                 ], 404);
             }
 
-            //Delete item of array tours
+            // Delete item of array tours
             foreach ($tours as $tour) {
                 $tour->delete();
             }
@@ -266,35 +313,33 @@ class TourController extends Controller
         }
     }
 
-    public function show($id)
+    public function show($hashId)
     {
-        // // $endeco = json_decode($id);
-
-        // if (isset($id)) {
-        //     $secretKey = "MinhHiep"; // Khóa bí mật
-        //     // Hash HMAC
-        //     $hashedId = json_encode( $id);
-        // }
-
-        // // $newHashedId = hash_hmac('sha256', $id, $secretKey);
-        // // //  dd($hashedId, $newHashedId);
-        // // if($newHashedId == $hashedId )
-        // // {
-        //     dd($hashedId);
-        // // }
         try {
+            //Decrypt id
+            $id = decrypt($hashId);
+
+            //
             $tour = Tour::with('images', 'schedules')->find($id);
             //Check if tour not exits
             if (!$tour) {
                 return response()->json([
-                    "message" => "Tour not found",
+                    "message" => "Tour not found sdfsdfsdfdư" ,
                 ], 404);
             }
+
             //Return when find the tour
             return response()->json([
                 "tour" => $tour,
+                "id" => encrypt($tour->id) // Updated to encrypt the tour ID
             ], 200);
-        }catch (\Exception $e) {
+        }catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            // Xử lý trường hợp giải mã không thành công
+            return response()->json([
+                "message" => "Tour Not Found",
+                "error" => $e->getMessage(),
+            ], 400); // 400 Bad Request
+        } catch (\Exception $e) {
             return response()->json([
                 "message"=> "Something Went Wrong",
                 "error"=> $e->getMessage()

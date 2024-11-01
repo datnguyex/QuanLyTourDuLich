@@ -23,6 +23,10 @@ class Tour extends Model
         'availability',
     ];
 
+    protected $hidden = [
+        'id'
+    ];
+
 
     public function images() {
         return $this->hasMany(Images::class, "tour_id" ,"id");
@@ -51,4 +55,7 @@ class Tour extends Model
     {
         return $query->where('category', 'LIKE', '%' . $category . '%');
     }
+
+
+
 }

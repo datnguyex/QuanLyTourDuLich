@@ -21,7 +21,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 //Api router tour
 Route::prefix('tours')->controller(TourController::class)->group(function () {
-    Route::get('list', 'index');
+    Route::get('/list', 'index');
     Route::get('{id}', 'show');
     Route::put('{id}', 'update');
     Route::delete('{id}', 'destroy');
