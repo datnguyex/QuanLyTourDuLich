@@ -5,20 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Booking extends Model
+class Payment extends Model
 {
     use HasFactory;
 
-    protected $table = "booking";
+    protected $table = "payments";
 
     protected $fillable = [
         "tour_id",
-        "customer_id",
-        "booking_date",
-        "number_of_tikers",
+        "number_of_tickers",
+        "total_price",
         "user_id",
-        "tour_guide_id",
+        "payment_method",
+        "status",
+        "notes",
+        "transaction_id",
     ];
-
-
 }

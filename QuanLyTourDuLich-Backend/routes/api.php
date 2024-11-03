@@ -4,6 +4,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TourController;
+use App\Http\Controllers\PaymentController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -32,4 +33,20 @@ Route::prefix('tours')->controller(TourController::class)->group(function () {
     Route::get('total/count', 'countTours');
     Route::put('/{id}/status', 'updateStatus');
     Route::get('/sort={key}', 'sortTours');
+});
+/**Group api payment */
+Route::prefix('payments')->controller(PaymentController::class)->group(function () {
+    Route::get('/list', 'index');
+    Route::get('{id}', 'show');
+    Route::put('{id}', 'update');
+    Route::delete('{id}', 'destroy');
+    Route::patch('deleteAll', 'destroyPayment');
+    Route::post('/', 'store');
+    Route::get('/search/{key}', 'findByLocation');
+    Route::get('/category/{key}', 'findByCategory');
+    Route::get('total/count', 'countPayment');
+    Route::put('/{id}/status', 'updateStatus');
+    Route::get('/sort={key}', 'sortPayment');
+    Route::post('/momo_payment', 'momo_payment');
+    Route::post('/momo/ipn', 'momoIPN');
 });

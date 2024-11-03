@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Tour;
 use App\Models\Images;
 use App\Models\Schedule;
+use App\Models\HashSecret;
 use Storage;
 use File;
 use Illuminate\Support\Facades\Log;
@@ -14,34 +15,6 @@ use Illuminate\Support\Facades\Hash;
 
 class TourController extends Controller
 {
-    /**
-      *  Hàm mã hóa
-      * @param mixed $id
-      * @return string
-      */
-    public function encrypt($id)
-    {
-        $secretKey = env('SECRET_KEY', 'tourtravelstore');
-        $cipher = 'AES-256-CBC';
-        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($cipher));
-
-        // Mã hóa ID
-        $encrypted = openssl_encrypt($id, $cipher, $secretKey, 0, $iv);
-
-        // Trả về mã hóa kèm IV để giải mã sau này
-        return base64_encode($encrypted . '::' . $iv);
-    }
-
-    public function decrypt($data)
-    {
-        $secretKey = env('SECRET_KEY', 'tourtravelstore');
-        $cipher = 'AES-256-CBC';
-
-        list($encryptedData, $iv) = explode('::', base64_decode($data), 2);
-        return openssl_decrypt($encryptedData, $cipher, $secretKey, 0, $iv);
-    }
-
-
     /**
      * Get tours
      * @return mixed|\Illuminate\Http\JsonResponse
@@ -54,8 +27,8 @@ class TourController extends Controller
             // Tạo mảng tour tùy chỉnh
             $toursArray = $tours->getCollection()->map(function ($tour) {
                 return [
-                    'id' => encrypt($tour->id), // Hoặc trường khác bạn muốn
-                    'title' => $tour->title,
+                    'id' => HashSecret::encrypt($tour->id), // Hoặc trường khác bạn muốn
+                    'name' => $tour->name,
                     'description' => $tour->description,
                     'duration' => $tour->duration,
                     'price' => $tour->price,
@@ -165,7 +138,7 @@ class TourController extends Controller
     public function update(Request $request, $hashId)
     {
         try {
-            $id = decrypt($hashId); // Decrypt the hash ID
+            $id = HashSecret::decrypt($hashId); // Decrypt the hash ID
             $tour = Tour::with('images', 'schedules')->find($id);
             // Check if tour exists
             if (!$tour) {
@@ -235,7 +208,7 @@ class TourController extends Controller
                 'tour' => $tour,
                 'image' => $uploadedImages,
                 'schedules' => $schedules,
-                'id' => encrypt($tour->id), // Updated to encrypt the tour ID
+                'id' => HashSecret::encrypt($tour->id), // Updated to encrypt the tour ID
             ], 200);
 
         } catch (\Exception $e) {
@@ -257,7 +230,7 @@ class TourController extends Controller
     public function destroy($hashId)
     {
         try {
-            $id = decrypt($hashId); // Decrypt the hash ID
+            $id = HashSecret::decrypt($hashId); // Decrypt the hash ID
             $tour = Tour::find($id);
             // Check if tour exists
             if (!$tour) {
@@ -317,8 +290,7 @@ class TourController extends Controller
     {
         try {
             //Decrypt id
-            $id = decrypt($hashId);
-
+            $id = HashSecret::decrypt($hashId);
             //
             $tour = Tour::with('images', 'schedules')->find($id);
             //Check if tour not exits
@@ -331,7 +303,7 @@ class TourController extends Controller
             //Return when find the tour
             return response()->json([
                 "tour" => $tour,
-                "id" => encrypt($tour->id) // Updated to encrypt the tour ID
+                "id" => HashSecret::encrypt($tour->id) // Updated to encrypt the tour ID
             ], 200);
         }catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
             // Xử lý trường hợp giải mã không thành công
@@ -493,5 +465,21 @@ class TourController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+
+    // http://your-domain.com/images/your_image_filename.jpg
+    public function showImage($filename)
+    {
+        $path = 'D:/uploads/images/' . $filename; // Đường dẫn đến hình ảnh
+
+        if (!File::exists($path)) {
+            abort(404); // Trả về 404 nếu không tìm thấy hình ảnh
+        }
+
+        $file = File::get($path);
+        $type = File::mimeType($path);
+
+        // return Response::make($file, 200)->header("Content-Type", $type);
     }
 }
