@@ -7,11 +7,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TourController;
 use App\Http\Controllers\FavoriteController;
-<<<<<<< HEAD
 use App\Http\Controllers\TourGuideController;
-=======
 use App\Http\Controllers\PaymentController;
->>>>>>> deaa23191ac8770159aaa71301d3d7c710a70fa6
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -65,11 +62,11 @@ Route::get('users/{user}/edit', [UserController::class, 'edit']);
 Route::put('users/{id}', [UserController::class, 'update']);
 Route::delete('users/{id}', [UserController::class, 'destroy']);
 
-Route::get('/search/{key}', 'findByLocation');
-Route::get('/category/{key}', 'findByCategory');
-Route::get('total/count', 'countTours');
-Route::put('/{id}/status', 'updateStatus');
-Route::get('/sort={key}', 'sortTours');
+// Route::get('/search/{key}', '');
+// Route::get('/category/{key}', 'findByCategory');
+// Route::get('total/count', 'countTours');
+// Route::put('/{id}/status', 'updateStatus');
+// Route::get('/sort={key}', 'sortTours'); 
 
 
 /**Group api payment */
@@ -80,7 +77,7 @@ Route::prefix('payments')->controller(PaymentController::class)->group(function 
     Route::delete('{id}', 'destroy');
     Route::patch('deleteAll', 'destroyPayment');
     Route::post('/', 'store');
-    Route::get('/search/{key}', 'findByLocation');
+    // Route::get('/search/{key}', 'findByLocation');
     Route::get('/category/{key}', 'findByCategory');
     Route::get('total/count', 'countPayment');
     Route::put('/{id}/status', 'updateStatus');

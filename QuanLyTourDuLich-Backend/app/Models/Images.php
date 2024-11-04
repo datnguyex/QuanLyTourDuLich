@@ -16,12 +16,8 @@ class Images extends Model
         "image_url",
         "alt_text",
     ];
-<<<<<<< HEAD
-  
-=======
 
-    public function tour() {
-        return $this->hasOne(Tour::class, "id" ,"tour_id");
-    }
->>>>>>> deaa23191ac8770159aaa71301d3d7c710a70fa6
+    // public function tour() {
+    //     return $this->hasOne(Tour::class, "id" ,"tour_id");
+    // }
 }

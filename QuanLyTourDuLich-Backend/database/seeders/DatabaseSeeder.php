@@ -27,7 +27,7 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
         Payment::factory()->count(50)->create();
-        Tour::factory()->count(50)->create(); // Creates 50 payment records
+        // Tour::factory()->count(50)->create(); // Creates 50 payment records
         Schedule::factory()->count(50)->create(); // Creates 50 payment records
         Images::factory()->count(50)->create();
     }

@@ -4,10 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-<<<<<<< HEAD
 use App\Models\Images;
-=======
->>>>>>> deaa23191ac8770159aaa71301d3d7c710a70fa6
 
 class ImageSeeder extends Seeder
 {
@@ -16,7 +13,6 @@ class ImageSeeder extends Seeder
      */
     public function run(): void
     {
-<<<<<<< HEAD
         Images::insert([
             [
                 'tour_id' => 1, 
@@ -280,8 +276,4 @@ class ImageSeeder extends Seeder
         ]);
     }
     
-=======
-        //
-    }
->>>>>>> deaa23191ac8770159aaa71301d3d7c710a70fa6
 }
