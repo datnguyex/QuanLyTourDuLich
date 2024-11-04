@@ -59,6 +59,8 @@ return [
 
     'asset_url' => env('ASSET_URL'),
 
+    'locale' => 'vi',
+    'fallback_locale' => 'en',
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

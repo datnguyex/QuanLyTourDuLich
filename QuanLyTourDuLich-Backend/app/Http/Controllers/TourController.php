@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Tour;
+use App\Models\User;
 use App\Models\Images;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
@@ -247,11 +248,47 @@ class TourController extends Controller
             ], 500);
         }
     }
-    // hien thi tour moi nhat
+    
+    // private function encryptId($id, $key) {
+    //     $method = 'AES-256-CBC';
+    //     $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($method));
+    //     $encryptedId = openssl_encrypt($id, $method, $key, 0, $iv);
+    //     return base64_encode($iv . $encryptedId);
+    // }
+    
+    // private function decryptId($encryptedId, $key) {
+    //     $method = 'AES-256-CBC';
+        
+    //     $decodedUrl = urldecode($encryptedId);
+    //     $decodedData = base64_decode($decodedUrl);
+    //     $ivLength = openssl_cipher_iv_length($method);
+    //     $iv = substr($decodedData, 0, $ivLength);
+    //     $encryptedIdWithoutIv = substr($decodedData, $ivLength);
+        
+    //     return openssl_decrypt($encryptedIdWithoutIv, $method, $key, 0, $iv);
+    // }
+    
+    
     public function displayNewstTour(Request $request) {
         try {
-            $newstTour = tour::orderBy('created_at', 'desc')->get();
-            
+            $key = 'dat123';
+            $newstTour = Tour::getLatestTours(); 
+            $encryptedTours = $newstTour->map(function($tour) use ($key) {
+                return [
+                    'id' => (new User())->encryptId($tour->id, $key),   
+                    'name' => $tour->name, 
+                    'description' => $tour->description,    
+                    'duration' => $tour->duration, 
+                    'price' => $tour->price, 
+                    'start_date' => $tour->start_date, 
+                    'end_date' => $tour->end_date, 
+                    'location' => $tour->location, 
+                    'availability' => $tour->availability, 
+                    'create_at' => $tour->create_at, 
+                    'update_at' => $tour->update_at, 
+                    'images' => $tour->images,
+                ];
+            });
             if ($newstTour->isEmpty()) {
                 return response()->json([
                     "message" => "Tour not found",
@@ -259,18 +296,18 @@ class TourController extends Controller
             } else {
                 return response()->json([
                     "message" => "Get tour successfully",
-                    "data" => $newstTour,
+                    "data" => $encryptedTours,
                 ], 200);
             }
           
         } catch (QueryException $e) {
             return response()->json([
-                "message" => "Lỗi truy vấn cơ sở dữ liệu",
+                "message" => "Database query error",
                 "error" => $e->getMessage()
             ], 500);
         } catch (\Exception $e) {
             return response()->json([
-                "message" => "Đã xảy ra lỗi không xác định",
+                "message" => "An unknown error occurred",
                 "error" => $e->getMessage()
             ], 500);
         }
@@ -281,15 +318,25 @@ class TourController extends Controller
     }
     //xem chi tiet tour
     public function TourDetail(Request $request) {
+        $key = 'dat123';
         try {
+          
             $validatedData = $request->validate([
-                'tour_id' => 'required|exists:tours,id', 
+                'tour_id' => 'required',
             ], [
                 'tour_id.required' => 'Tour ID is required.', 
-                'tour_id.exists' => 'The specified tour does not exist.'
             ]);
+            $encodedTourId = $validatedData['tour_id'];
+            $user = new User(); 
+            $tourId = $user->decryptId($encodedTourId, $key); 
+            if (!$tourId) {
+                return response()->json([
+                    "error" => "Invalid tour ID.",
+                ], 404);
+            }
     
-            $tourDetail = Tour::find($validatedData['tour_id']); 
+           
+            $tourDetail = Tour::getTourDetailWithImages($tourId);
             
             if ($tourDetail) {
                 return response()->json([
@@ -298,7 +345,7 @@ class TourController extends Controller
                 ], 200);
             } else {
                 return response()->json([
-                    "message" => "Get tour not successful",
+                    "error" => "Tour not found.",
                 ], 404);
             }      
         } catch (ValidationException $e) {
@@ -313,5 +360,7 @@ class TourController extends Controller
             ], 500);
         }  
     }
+    
+    
     
 }

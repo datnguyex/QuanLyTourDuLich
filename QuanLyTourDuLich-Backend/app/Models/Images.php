@@ -16,4 +16,5 @@ class Images extends Model
         "image_url",
         "alt_text",
     ];
+  
 }

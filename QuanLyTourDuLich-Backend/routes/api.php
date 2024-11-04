@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TourController;
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\TourGuideController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -29,6 +30,11 @@ Route::prefix('tours')->controller(TourController::class)->group(function () {
 });
 
 //
+Route::get('getAllTourGuide',[TourGuideController::class,'getAllTourGuide']);
+Route::post('addTourGuide',[TourGuideController::class,'addTourGuide']);
+Route::get('getTourGuideID',[TourGuideController::class,'getTourGuideID']);
+Route::post('deleteTourGuide',[TourGuideController::class,'deleteTourGuide']);
+Route::post('UpdateTourGuide',[TourGuideController::class,'UpdateTourGuide']);
 Route::post('addTourToFavorite',[FavoriteController::class,'addTourToFavorite']);
 Route::get('TourDetail',[TourController::class,'TourDetail']);
 Route::get('displayNewstTour',[TourController::class,'displayNewstTour']);
