@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Models\Tour;
 use App\Models\Images;
 use App\Models\Schedule;
+use App\Models\Booking;
 class DatabaseSeeder extends Seeder
 {
     /**
@@ -27,5 +28,6 @@ class DatabaseSeeder extends Seeder
         Tour::factory()->count(50)->create(); // Creates 50 payment records
         Schedule::factory()->count(50)->create(); // Creates 50 payment records
         Images::factory()->count(50)->create();
+        Booking::factory()->count(50)->create();
     }
 }

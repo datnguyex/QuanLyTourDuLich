@@ -60,9 +60,12 @@ class PaymentController extends Controller
                 'transaction_id' => 'nullable|string',
             ]);
             $payment = Payment::create($validatedData);
-            return response()->json(['payment' => $payment], 201);
+            return response()->json(['payment' => $payment], 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to create payment.'], 500);
+            return response()->json([
+                'message' => 'Failed to create payment.',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -123,17 +126,18 @@ class PaymentController extends Controller
      */
     public function momo_payment(Request $request){
         try {
-            $urlCheckout = "http://127.0.0.1:8000/api/payments/momo/ipn";
-            $price = $request->price;
+            // $urlCheckout = "http://127.0.0.1:8000/api/payments/momo/ipn";
+            $urlCheckout = "http://localhost:3000/minh-hiep/payment/success";
+            $price = (string)$request->total_price;
             $endpoint = "https://test-payment.momo.vn/v2/gateway/api/create";
             $partnerCode = 'MOMOBKUN20180529';
             $accessKey = 'klm05TvNBzhg7h7j';
             $secretKey = 'at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa';
             $orderInfo = "Thanh toán qua MoMo";
             $amount = $price;
-            $orderId = time() ."";
-            $redirectUrl =$urlCheckout;
-            $ipnUrl =$urlCheckout;
+            $orderId = time() . "";
+            $redirectUrl = $urlCheckout;
+            $ipnUrl = $urlCheckout;
             $extraData = "";
             $requestId = time() . "";
             $requestType = "payWithATM";
@@ -157,8 +161,9 @@ class PaymentController extends Controller
             $jsonResult = json_decode($result, true);  // decode json
 
             //Create Payment
-            $this->store($request);
 
+            $request->merge(['transaction_id' => $jsonResult['orderId']]);
+            $this->store($request);
             //Return url
             return response()->json([
                 'payUrl' => $jsonResult['payUrl']
@@ -179,40 +184,27 @@ class PaymentController extends Controller
      */
     public function momoIPN(Request $request)
     {
-        // Lấy dữ liệu từ yêu cầu IPN
-        $data = $request->all();
-        dd($data);
-        // Kiểm tra chữ ký để xác thực dữ liệu
-        $partnerCode = $data['partnerCode'];
-        $orderId = $data['orderId'];
-        $requestId = $data['requestId'];
-        $amount = $data['amount'];
-        $transId = $data['transId'];
-        $orderInfo = $data['orderInfo'];
-        $orderStatus = $data['orderStatus'];
-        $signature = $data['signature'];
-
-        // Tạo chữ ký để xác thực
-        $rawHash = "partnerCode=" . $partnerCode . "&orderId=" . $orderId . "&requestId=" . $requestId . "&amount=" . $amount . "&transId=" . $transId . "&orderStatus=" . $orderStatus;
-        $expectedSignature = hash_hmac("sha256", $rawHash, 'at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa');
-
-        if ($signature === $expectedSignature) {
-            // Chữ ký hợp lệ, xử lý đơn hàng
-            $payment = Payment::where('transaction_id', $transId)->first();
-
+        try {
+            $payment = Payment::where('transaction_id', $request->orderId)->first();
             if ($payment) {
                 // Cập nhật trạng thái thanh toán
-                $payment->status = $orderStatus; // cập nhật trạng thái
-                $payment->transaction_id = $transId; // lưu ID giao dịch
+                $payment->status = "completed"; // cập nhật trạng thái
+                $payment->transaction_id = $request->transId; // lưu ID giao dịch
                 $payment->save(); // lưu thay đổi
 
-                return response()->json(['message' => 'Payment status updated'], 200);
+                return response()->json([
+                    'message' => 'Payment status updated',
+                ], 200);
             } else {
                 return response()->json(['message' => 'Payment not found'], 404);
             }
-        } else {
-            // Chữ ký không hợp lệ
-            return response()->json(['message' => 'Invalid signature'], 403);
+
+        }catch(\Exception $e) {
+            return response()->json([
+                'message' => 'Some thing wrong',
+                'error' => $e->getMessage()
+            ], 404);
         }
+
     }
 }

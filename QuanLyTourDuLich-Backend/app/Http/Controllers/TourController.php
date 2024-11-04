@@ -318,7 +318,7 @@ class TourController extends Controller
             ], 500);
         }
     }
-    // hien thi tour moi nhat
+
     public function displayNewstTour(Request $request) {
         try {
             $newstTour = tour::orderBy('created_at', 'desc')->get();
@@ -334,12 +334,7 @@ class TourController extends Controller
                 ], 200);
             }
 
-        } catch (QueryException $e) {
-            return response()->json([
-                "message" => "Lỗi truy vấn cơ sở dữ liệu",
-                "error" => $e->getMessage()
-            ], 500);
-        } catch (\Exception $e) {
+        }catch (\Exception $e) {
             return response()->json([
                 "message" => "Đã xảy ra lỗi không xác định",
                 "error" => $e->getMessage()
@@ -372,12 +367,7 @@ class TourController extends Controller
                     "message" => "Get tour not successful",
                 ], 404);
             }
-        } catch (ValidationException $e) {
-            return response()->json([
-                "message" => "An error occurred",
-                "error" => $e->getMessage()
-            ], 422);
-        } catch (\Exception $e) {
+        }catch (\Exception $e) {
             return response()->json([
                 "message" => "An unexpected error occurred",
                 "error" => $e->getMessage()

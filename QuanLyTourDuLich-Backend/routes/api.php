@@ -1,6 +1,7 @@
 <?php
 
 
+use App\Http\Controllers\BookingController;
 use Illuminate\Http\Request;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
@@ -19,7 +20,7 @@ use App\Http\Controllers\PaymentController;
 |
 */
 
-
+/**Group api tours */
 Route::prefix('tours')->controller(TourController::class)->group(function () {
     Route::get('/list', 'index');
     Route::get('{id}', 'show');
@@ -27,6 +28,36 @@ Route::prefix('tours')->controller(TourController::class)->group(function () {
     Route::delete('{id}', 'destroy');
     Route::patch('deleteAll', 'destroyTours');
     Route::post('/', 'store');
+    Route::get('/search/{key}', 'findByLocation');
+    Route::get('/category/{key}', 'findByCategory');
+    Route::get('total/count', 'countTours');
+    Route::put('/{id}/status', 'updateStatus');
+    Route::get('/sort={key}', 'sortTours');
+});
+
+/**Group api payment */
+Route::prefix('payments')->controller(PaymentController::class)->group(function () {
+    Route::get('/list', 'index');
+    Route::get('{id}', 'show');
+    Route::put('{id}', 'update');
+    Route::delete('{id}', 'destroy');
+    Route::post('/', 'store');
+    Route::put('/{id}/status', 'updateStatus');
+    Route::get('/sort={key}', 'sortPayment');
+    Route::post('/momo_payment', 'momo_payment');
+    Route::post('/momo/ipn', 'momoIPN');
+});
+
+
+/**Group api booking */
+Route::prefix('bookings')->controller(BookingController::class)->group(function () {
+    Route::get('/list', 'index');
+    Route::get('{id}', 'show');
+    Route::put('{id}', 'update');
+    Route::delete('{id}', 'destroy');
+    Route::post('/', 'store');
+    Route::put('/{id}/status', 'updateStatus');
+    Route::get('/sort={key}', 'sortBooking');
 });
 
 //
@@ -55,27 +86,3 @@ Route::post('users', [UserController::class, 'store']);
 Route::get('users/{user}/edit', [UserController::class, 'edit']);
 Route::put('users/{id}', [UserController::class, 'update']);
 Route::delete('users/{id}', [UserController::class, 'destroy']);
-
-Route::get('/search/{key}', 'findByLocation');
-Route::get('/category/{key}', 'findByCategory');
-Route::get('total/count', 'countTours');
-Route::put('/{id}/status', 'updateStatus');
-Route::get('/sort={key}', 'sortTours');
-
-
-/**Group api payment */
-Route::prefix('payments')->controller(PaymentController::class)->group(function () {
-    Route::get('/list', 'index');
-    Route::get('{id}', 'show');
-    Route::put('{id}', 'update');
-    Route::delete('{id}', 'destroy');
-    Route::patch('deleteAll', 'destroyPayment');
-    Route::post('/', 'store');
-    Route::get('/search/{key}', 'findByLocation');
-    Route::get('/category/{key}', 'findByCategory');
-    Route::get('total/count', 'countPayment');
-    Route::put('/{id}/status', 'updateStatus');
-    Route::get('/sort={key}', 'sortPayment');
-    Route::post('/momo_payment', 'momo_payment');
-    Route::post('/momo/ipn', 'momoIPN');
-});

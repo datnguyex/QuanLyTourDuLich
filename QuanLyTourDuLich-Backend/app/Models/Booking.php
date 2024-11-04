@@ -4,21 +4,25 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use App\Models\Tour;
 class Booking extends Model
 {
     use HasFactory;
 
-    protected $table = "booking";
+    protected $table = "bookings";
 
     protected $fillable = [
         "tour_id",
         "customer_id",
         "booking_date",
         "number_of_tikers",
-        "user_id",
         "tour_guide_id",
     ];
+
+
+    public function tour() {
+        return $this->hasOne(Tour::class, 'id', 'tour_id');
+    }
 
 
 }

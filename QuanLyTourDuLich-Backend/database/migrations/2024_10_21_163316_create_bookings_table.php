@@ -17,7 +17,6 @@ return new class extends Migration
             $table->Integer('customer_id');
             $table->date('booking_date');
             $table->integer('number_of_people');
-            $table->Integer('user_id');
             $table->Integer('tour_guide_id');
             $table->timestamps();
         });
