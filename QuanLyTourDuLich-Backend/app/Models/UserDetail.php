@@ -26,4 +26,12 @@ class UserDetail extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+    public static function createUserDetail($date,$data,$idUser)
+    {
+        return self::create([
+            'user_id' => $idUser,
+            'gender' => $data['gender'],
+            'dob' => $date,
+        ]);
+    }
 }

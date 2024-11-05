@@ -12,15 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('payments', function (Blueprint $table) {
-            $table->id(); 
-            $table->Integer('tour_id'); 
-            $table->Integer('customer_id'); 
-            $table->date('booking_date');
-            $table->Integer('number_of_people'); 
-            $table->float('total_price'); 
-            $table->Integer('user_id'); 
-            $table->Integer('tour_guide_id');
-            $table->timestamps(); 
+            $table->id();
+            $table->Integer('tour_id');
+            $table->Integer('number_of_tickers');
+            $table->float('total_price');
+            $table->Integer('user_id');
+            $table->enum('payment_method', ['transfer', 'cash']);
+            $table->enum('status', ['pending', 'completed', 'failed', 'refunded'])->default('pending');
+            $table->text('notes')->nullable();
+            $table->string('transaction_id')->nullable();
+            $table->timestamps();
         });
     }
 

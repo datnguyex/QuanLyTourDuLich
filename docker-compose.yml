@@ -1,0 +1,38 @@
+services:
+  laravel:
+    build: ./QuanLyTourDuLich-Backend # Đường dẫn đến Dockerfile của Laravel
+    container_name: QuanLyTourDuLich
+    ports:
+      - "8000:80" # Laravel sẽ chạy trên port 8000
+    volumes:
+      - ./QuanLyTourDuLich-Backend:/var/www/html
+    environment:
+      - DB_HOST=mysql
+      - DB_DATABASE=tourtravelstore
+      - DB_USERNAME=root
+      - DB_PASSWORD=
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:5.7
+    container_name: mysql-db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE:
+    volumes:
+      - db_data:/var/lib/mysql
+
+  vue:
+    build:
+      context: ./QuanLyTourDuLichFE
+      dockerfile: Dockerfile
+    volumes:
+      - ./QuanLyTourDuLichFE:/app
+    ports:
+      - "3000:3000"
+
+volumes:
+  db_data:

@@ -14,6 +14,7 @@ use Twilio\Rest\Client;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidDateException;
 use Illuminate\Support\Facades\Auth;    
+
 class AuthController extends Controller
 {
     public function user()
@@ -51,7 +52,7 @@ class AuthController extends Controller
                 ]/|regex:/[0-9]/|regex:/[@$!%*?&]/',
                 'role' => 'required|in:1,2,3',
             ], [
-                'username.unique' => 'co roi',
+                // 'username.unique' => 'co roi',
                 'username.required' => 'Account name is required.',
                 'username.max' => 'Account name must be between 10 and 255 characters.',
                 'username.min' => 'Account name must be between 10 and 255 characters.',
@@ -63,8 +64,8 @@ class AuthController extends Controller
                 'role.required' => 'Choose your permission.',
                 'role.in' => 'Invalid permission.',
             ]);
-            $users = User::all();
-            $usernameExists = User::where('username', $validatedData['username'])->exists();
+            $users = User::getAllUsers();
+            $usernameExists = User::usernameExists($validatedData['username']);
             if ($usernameExists) {
                 return response()->json([
                     'message' => 'Validation failed',
@@ -124,7 +125,7 @@ class AuthController extends Controller
                     });
                 
                     // Kiểm tra và xóa bản ghi cũ
-                    $verification = VerifyRegister::where('username', $validatedData['username'])->first();
+                    $verification = VerifyRegister::userExists($validatedData['username']);
                     if ($verification) {
                         $verification->delete();
                     } 
@@ -172,7 +173,7 @@ class AuthController extends Controller
             $code = $validatedData['confirmCode'];
             
             
-            $verification = VerifyRegister::where('username', $request->username)->first();
+            $verification = VerifyRegister::findByUsername($username);
     
            
             // if (!$verification) {
@@ -236,18 +237,10 @@ class AuthController extends Controller
                     ],
                 ], 422);
             }
-            $mainInfo = User::create([
-                'username' => $request->username,
-                'password' => Hash::make($request->password),
-                'role' => $request->role, 
-            ]);
+            $mainInfo = User::createUser($request);
             
             $idUser = $mainInfo->id;
-            $moreInfomation = UserDetail::create([
-                'user_id' => $idUser, 
-                'gender' => $validatedData['gender'], 
-                'dob' => $date, 
-            ]);
+            $moreInfomation = UserDetail::createUserDetail($date,$validatedData,$idUser);
             
             if($mainInfo && $moreInfomation) {
                 return response()->json([
