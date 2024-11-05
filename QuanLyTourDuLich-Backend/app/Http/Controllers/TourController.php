@@ -319,6 +319,7 @@ class TourController extends Controller
             ], 500);
         }
     }
+<<<<<<< HEAD
     
     // private function encryptId($id, $key) {
     //     $method = 'AES-256-CBC';
@@ -340,6 +341,9 @@ class TourController extends Controller
     // }
     
     
+=======
+
+>>>>>>> home
     public function displayNewstTour(Request $request) {
         try {
             $key = 'dat123';
@@ -371,12 +375,16 @@ class TourController extends Controller
                 ], 200);
             }
 
+<<<<<<< HEAD
         } catch (QueryException $e) {
             return response()->json([
                 "message" => "Database query error",
                 "error" => $e->getMessage()
             ], 500);
         } catch (\Exception $e) {
+=======
+        }catch (\Exception $e) {
+>>>>>>> home
             return response()->json([
                 "message" => "An unknown error occurred",
                 "error" => $e->getMessage()
@@ -419,12 +427,7 @@ class TourController extends Controller
                     "error" => "Tour not found.",
                 ], 404);
             }
-        } catch (ValidationException $e) {
-            return response()->json([
-                "message" => "An error occurred",
-                "error" => $e->getMessage()
-            ], 422);
-        } catch (\Exception $e) {
+        }catch (\Exception $e) {
             return response()->json([
                 "message" => "An unexpected error occurred",
                 "error" => $e->getMessage()

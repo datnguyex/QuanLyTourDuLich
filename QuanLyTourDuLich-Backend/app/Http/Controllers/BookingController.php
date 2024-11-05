@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Booking;
+use App\Models\HashSecret;
 use Illuminate\Http\Request;
 
 class BookingController extends Controller
@@ -23,4 +25,38 @@ class BookingController extends Controller
 
         }
     }
+
+    /**
+     * Find booking with tour_id
+     * @param mixed $hashId
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
+    public function show($hashId) {
+        try {
+            // $id = HashSecret::decrypt($hashId);
+            $booking = Booking::where('id',$hashId)->with('tour')->firstOr();
+
+            if(!$booking) {
+                return response()->json([
+                    "message" => "Booking Not Found"
+                ], 404);
+            };
+
+            $price = $booking->number_of_people * $booking->tour->price;
+
+            return response()->json([
+                "booking" => $booking,
+                "price" => $price,
+                "tour_id" => $booking->tour->id
+            ], 200);
+
+        }catch(\Exception $e){
+            return response()->json([
+                'message' => "Some thing wrong",
+                "error" => $e->getMessage()
+            ], 500);
+
+        }
+    }
+
 }
