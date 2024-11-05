@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->integer('tour_id');
             $table->string('image_url');
-            $table->string('alt_text');
+            $table->string('alt_text')->nullable();
             $table->timestamps();
         });
     }

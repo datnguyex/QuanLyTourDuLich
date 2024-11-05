@@ -69,29 +69,32 @@ class TourController extends Controller
      public function store(Request $request)
      {
         try {
+            $schedule = null;
             //Make vaildate for variable
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
                 'description' => 'required|string',
                 'duration' => 'required|integer',
                 'price' => 'required|numeric',
-                'start_date' => 'required|date',
-                'end_date' => 'required|date|after:start_date',
+                // 'start_date' => 'required|date',
+                // 'end_date' => 'required|date|after:start_date',
                 'location' => 'required|string',
                 'images.*' => 'required|file|image|mimes:png,jpg,svg',
-                'schedules' => 'required',
+                'schedules' => 'nullable',
             ]);
 
             $tour = Tour::create($validatedData);
 
             //Get array schedules
-            $schedules = json_decode($validatedData['schedules'], true);
-            foreach($schedules as $item) {
-                $schedule = Schedule::create([
-                    'name' => $item['name_schedule'],
-                    'time' => $item['time_schedule'],
-                    'tour_id' => $tour->id,
-                ]);
+            if ($request->has('schedules')) {
+                $schedules = json_decode($validatedData['schedules'], true);
+                foreach($schedules as $item) {
+                    $schedule = Schedule::create([
+                        'name' => $item['name_schedule'],
+                        'time' => $item['time_schedule'],
+                        'tour_id' => $tour->id,
+                    ]);
+                }
             }
 
             // Handle file uploads
@@ -139,6 +142,7 @@ class TourController extends Controller
     public function update(Request $request, $hashId)
     {
         try {
+            $schedules = null;
             $id = HashSecret::decrypt($hashId); // Decrypt the hash ID
             $tour = Tour::with('images', 'schedules')->find($id);
             // Check if tour exists
@@ -154,11 +158,11 @@ class TourController extends Controller
                 'description' => 'required|string',
                 'duration' => 'required|integer',
                 'price' => 'required|numeric',
-                'start_date' => 'required|date',
-                'end_date' => 'required|date|after:start_date',
+                // 'start_date' => 'required|date',
+                // 'end_date' => 'required|date|after:start_date',
                 'location' => 'required|string',
                 'images.*' => 'file|image|mimes:png,jpg,svg',
-                'schedules' => 'required',
+                'schedules' => 'nullable',
             ]);
 
             // Update tour
@@ -319,48 +323,24 @@ class TourController extends Controller
             ], 500);
         }
     }
-<<<<<<< HEAD
-    
-    // private function encryptId($id, $key) {
-    //     $method = 'AES-256-CBC';
-    //     $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($method));
-    //     $encryptedId = openssl_encrypt($id, $method, $key, 0, $iv);
-    //     return base64_encode($iv . $encryptedId);
-    // }
-    
-    // private function decryptId($encryptedId, $key) {
-    //     $method = 'AES-256-CBC';
-        
-    //     $decodedUrl = urldecode($encryptedId);
-    //     $decodedData = base64_decode($decodedUrl);
-    //     $ivLength = openssl_cipher_iv_length($method);
-    //     $iv = substr($decodedData, 0, $ivLength);
-    //     $encryptedIdWithoutIv = substr($decodedData, $ivLength);
-        
-    //     return openssl_decrypt($encryptedIdWithoutIv, $method, $key, 0, $iv);
-    // }
-    
-    
-=======
 
->>>>>>> home
     public function displayNewstTour(Request $request) {
         try {
             $key = 'dat123';
-            $newstTour = Tour::getLatestTours(); 
+            $newstTour = Tour::getLatestTours();
             $encryptedTours = $newstTour->map(function($tour) use ($key) {
                 return [
-                    'id' => (new User())->encryptId($tour->id, $key),   
-                    'name' => $tour->name, 
-                    'description' => $tour->description,    
-                    'duration' => $tour->duration, 
-                    'price' => $tour->price, 
-                    'start_date' => $tour->start_date, 
-                    'end_date' => $tour->end_date, 
-                    'location' => $tour->location, 
-                    'availability' => $tour->availability, 
-                    'create_at' => $tour->create_at, 
-                    'update_at' => $tour->update_at, 
+                    'id' => (new User())->encryptId($tour->id, $key),
+                    'name' => $tour->name,
+                    'description' => $tour->description,
+                    'duration' => $tour->duration,
+                    'price' => $tour->price,
+                    'start_date' => $tour->start_date,
+                    'end_date' => $tour->end_date,
+                    'location' => $tour->location,
+                    'availability' => $tour->availability,
+                    'create_at' => $tour->create_at,
+                    'update_at' => $tour->update_at,
                     'images' => $tour->images,
                 ];
             });
@@ -375,16 +355,12 @@ class TourController extends Controller
                 ], 200);
             }
 
-<<<<<<< HEAD
         } catch (QueryException $e) {
             return response()->json([
                 "message" => "Database query error",
                 "error" => $e->getMessage()
             ], 500);
         } catch (\Exception $e) {
-=======
-        }catch (\Exception $e) {
->>>>>>> home
             return response()->json([
                 "message" => "An unknown error occurred",
                 "error" => $e->getMessage()
@@ -399,24 +375,24 @@ class TourController extends Controller
     public function TourDetail(Request $request) {
         $key = 'dat123';
         try {
-          
+
             $validatedData = $request->validate([
                 'tour_id' => 'required',
             ], [
-                'tour_id.required' => 'Tour ID is required.', 
+                'tour_id.required' => 'Tour ID is required.',
             ]);
             $encodedTourId = $validatedData['tour_id'];
-            $user = new User(); 
-            $tourId = $user->decryptId($encodedTourId, $key); 
+            $user = new User();
+            $tourId = $user->decryptId($encodedTourId, $key);
             if (!$tourId) {
                 return response()->json([
                     "error" => "Invalid tour ID.",
                 ], 404);
             }
-    
-           
+
+
             $tourDetail = Tour::getTourDetailWithImages($tourId);
-            
+
             if ($tourDetail) {
                 return response()->json([
                     "message" => "Get tour successful",
@@ -599,7 +575,7 @@ class TourController extends Controller
 
         // return Response::make($file, 200)->header("Content-Type", $type);
     }
-    
-    
-    
+
+
+
 }
