@@ -8,25 +8,21 @@ class UserController extends Controller
 {
     public function index()
     {
-
         $users = User::all();
         return response()->json([
             'users'  => $users
         ], 200);
-        // return view('users.index', compact('users'));
     }
 
-   
     public function destroy($id)
     {
-        $user = User::findOrFail($id); // Tìm người dùng theo ID
-        $user->delete(); // Xóa người dùng
+        $user = User::findOrFail($id);
+        $user->delete();
     
         return response()->json([
             'message' => 'Người dùng đã được xóa thành công.'
         ], 200);
     }
-    
 
     public function store(Request $request)
     {
@@ -36,17 +32,19 @@ class UserController extends Controller
                 'username' => [
                     'required', 
                     'max:100', 
-                    'unique:users', 
-                    'regex:/[a-zA-Z]/', 
+                    'unique:users',
                     'not_regex:/^\s/', 
                     'not_regex:/\s{2,}/'
                 ],
-                'password' => 'required|min:6',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required|min:8',
                 'role' => 'required|in:1,2,3',
             ], [
                 'name.required' => 'Vui lòng nhập tên.',
                 'username.unique' => 'Tên người dùng đã tồn tại.',
-                'username.regex' => 'Tên người dùng phải chứa ít nhất một chữ cái.',
+                'email.required' => 'Vui lòng nhập email.',
+                'email.email' => 'Định dạng email không hợp lệ.',
+                'email.unique' => 'Email đã tồn tại.',
                 'username.not_regex' => 'Không được có khoảng trắng đầu hoặc hai khoảng trắng liên tiếp.',
                 'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
                 'role.in' => 'Vai trò không hợp lệ.',
@@ -55,6 +53,7 @@ class UserController extends Controller
             $user = User::create([
                 'name' => $validatedData['name'],
                 'username' => $validatedData['username'],
+                'email' => $validatedData['email'],
                 'password' => bcrypt($validatedData['password']),
                 'role' => $validatedData['role'],
             ]);
@@ -65,68 +64,72 @@ class UserController extends Controller
             ], 201);
     
         } catch (\Exception $e) {
-            // Ghi lại lỗi để phân tích
             \Log::error('Lỗi khi thêm người dùng: ' . $e->getMessage());
     
             return response()->json([
                 'message' => 'Đã xảy ra lỗi khi thêm người dùng.',
-                'error' => $e->getMessage() // Bạn có thể chọn không hiển thị thông tin lỗi chi tiết cho người dùng
+                'error' => $e->getMessage()
             ], 500);
         }
     }
-    
 
     public function update(Request $request, $id)
-{
-    try {
-        $user = User::findOrFail($id);
-        $validatedData = $request->validate([
-            'name' => 'required|max:100',
-            'username' => [
-                'required', 
-                'max:100', 
-                'regex:/[a-zA-Z]/', // phải có ít nhất một chữ cái
-                'not_regex:/^\s/', // không được có khoảng trắng đầu tiên
-                'not_regex:/\s{2,}/', // không được có hai khoảng trắng liên tiếp
-                
-            ],
-            'password' => 'nullable|min:6', // chỉ xác thực mật khẩu nếu có nhập
-            'role' => 'required|in:1,2,3',
-        ], [
-            'name.required' => 'Vui lòng nhập tên.',
-            'username.regex' => 'Tên người dùng phải chứa ít nhất một chữ cái.',
-            'username.not_regex' => 'Tên người dùng không được có khoảng trắng đầu hoặc hai khoảng trắng liên tiếp.',
-            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
-            'role.in' => 'Vai trò không hợp lệ.',
-        ]);
-
-        // Nếu trường mật khẩu được nhập, mã hóa mật khẩu mới
-        if ($request->filled('password')) {
-            $validatedData['password'] = bcrypt($validatedData['password']);
-        } else {
-            // Nếu không có mật khẩu mới, xóa nó khỏi mảng dữ liệu đã xác thực
-            unset($validatedData['password']);
+    {
+        try {
+            // Tìm người dùng theo ID
+            $user = User::find($id);
+            
+            // Kiểm tra xem người dùng có tồn tại không
+            if (!$user) {
+                return response()->json([
+                    'message' => 'Người dùng không tồn tại.'
+                ], 404); // Trả về mã 404 nếu không tìm thấy người dùng
+            }
+    
+            $validatedData = $request->validate([
+                'name' => 'required|max:100',
+                'username' => [
+                    'required', 
+                    'max:100', 
+                    'regex:/[a-zA-Z]/',
+                    'not_regex:/^\s/',
+                    'not_regex:/\s{2,}/',
+                ],
+                'email' => 'required|email|unique:users,email,' . $user->id,
+                'password' => 'nullable|min:6',
+                'role' => 'required|in:1,2,3',
+            ], [
+                'name.required' => 'Vui lòng nhập tên.',
+                'username.regex' => 'Tên người dùng phải chứa ít nhất một chữ cái.',
+                'email.required' => 'Vui lòng nhập email.',
+                'email.email' => 'Định dạng email không hợp lệ.',
+                'email.unique' => 'Email đã tồn tại.',
+                'username.not_regex' => 'Tên người dùng không được có khoảng trắng đầu hoặc hai khoảng trắng liên tiếp.',
+                'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
+                'role.in' => 'Vai trò không hợp lệ.',
+            ]);
+    
+            // Nếu mật khẩu không được cung cấp, giữ nguyên mật khẩu cũ
+            if ($request->filled('password')) {
+                $validatedData['password'] = bcrypt($validatedData['password']);
+            } else {
+                unset($validatedData['password']);
+            }
+    
+            // Cập nhật thông tin người dùng
+            $user->update($validatedData);
+    
+            return response()->json([
+                'message' => 'Người dùng đã được cập nhật thành công.',
+            ], 200);
+    
+        } catch (\Exception $e) {
+            \Log::error('Lỗi khi cập nhật người dùng: ' . $e->getMessage());
+    
+            return response()->json([
+                'message' => 'Đã xảy ra lỗi khi cập nhật người dùng.',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        // Cập nhật thông tin người dùng
-        $user->update($validatedData);
-
-        // Trả về thông báo thành công và dữ liệu người dùng đã cập nhật
-        return response()->json([
-            'message' => 'Người dùng đã được cập nhật thành công.',
-        ], 200);
-
-    } catch (\Exception $e) {
-        // Ghi lại lỗi để phân tích
-        \Log::error('Lỗi khi cập nhật người dùng: ' . $e->getMessage());
-
-        return response()->json([
-            'message' => 'Đã xảy ra lỗi khi cập nhật người dùng.',
-            'error' => $e->getMessage() // Bạn có thể chọn không hiển thị thông tin lỗi chi tiết cho người dùng
-        ], 500);
     }
-}
-
-
-
 }

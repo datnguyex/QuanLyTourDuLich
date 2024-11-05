@@ -15,6 +15,7 @@ class UserDetail extends Model
         'user_id',
         'phone',
         'address',
+        'email',
         'profile_picture',
         'gender',
         'dob',

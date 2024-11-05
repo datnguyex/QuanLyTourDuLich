@@ -3,46 +3,48 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\User; // Thêm dòng này
-use Illuminate\Support\Facades\Hash; // Nếu bạn muốn sử dụng Hash cho mật khẩu
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
-        // Xóa dữ liệu cũ (nếu cần)
-        User::truncate();
+        // Tạo hoặc cập nhật nếu username đã tồn tại
+        User::updateOrCreate(
+            ['username' => 'admin'],
+            [
+                'name' => 'Admin User',
+                'email' => 'admin@example.com',
+                'password' => Hash::make('password123'),
+                'role' => 1,
+                'email_verified_at' => now(),
+            ]
+        );
 
-        // Tạo người dùng mẫu
-        User::create([
-            
-            'name' => 'Nguyễn Văn A',
-            'username' => 'nguyenvana',
-            'password' => bcrypt('password123'), // Mật khẩu được mã hóa
-            'role' => 1, // Role là 1
-           
-        ]);
+        User::updateOrCreate(
+            ['username' => 'user1'],
+            [
+                'name' => 'Normal User',
+                'email' => 'user1@example.com',
+                'password' => Hash::make('password123'),
+                'role' => 2,
+                'email_verified_at' => now(),
+            ]
+        );
 
-        User::create([       
-            'name' => 'Trần Thị B',
-            'username' => 'tranthib',
-            'password' => bcrypt('password456'), // Mật khẩu được mã hóa
-            'role' => 2, // Role là 2
-          
-        ]);
-
-        User::create([
-           
-            'name' => 'Lê Văn C',
-            'username' => 'levanc',
-            'password' => bcrypt('password789'), // Mật khẩu được mã hóa
-            'role' => 3, // Role là 3
-            
-        ]);
-        User::create([
-            'username' => 'test@gmail.com',
-            'password' => Hash::make('Dat72@@##!!1'), 
-            'role' => 1,
-        ]);
+        User::updateOrCreate(
+            ['username' => 'manager'],
+            [
+                'name' => 'Manager User',
+                'email' => 'manager@example.com',
+                'password' => Hash::make('password123'),
+                'role' => 3,
+                'email_verified_at' => now(),
+            ]
+        );
     }
 }

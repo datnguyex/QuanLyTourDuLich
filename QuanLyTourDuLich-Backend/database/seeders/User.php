@@ -1,5 +1,6 @@
 <?php
 
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,12 +19,13 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'username',  // Thêm thuộc tính username
+        'username',    // Thêm thuộc tính username
+        'email',       // Thêm thuộc tính email
         'password',
-        'email',
-        'role',      // Thêm thuộc tính role
+        'role',        // Thêm thuộc tính role
         'email_verified_at', // Thêm thuộc tính email_verified_at nếu cần
     ];
+
     /**
      * The attributes that should be hidden for serialization.
      *
