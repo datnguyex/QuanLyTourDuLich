@@ -14,9 +14,9 @@ return new class extends Migration
         //
         Schema::create('schedules', function(Blueprint $table){
             $table->id();
-            $table->string('name');
-            $table->integer('tour_id');
-            $table->dateTime('time');
+            $table->string('name')->nullable();
+            $table->integer('tour_id')->nullable();
+            $table->dateTime('time')->nullable();
             $table->timestamps();
         });
     }
