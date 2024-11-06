@@ -15,9 +15,12 @@ return new class extends Migration
             $table->id();
             $table->Integer('tour_id');
             $table->Integer('customer_id');
-            $table->date('booking_date');
+            $table->date('booking_date')->nullable();
             $table->integer('number_of_people');
-            $table->Integer('tour_guide_id');
+            $table->integer('number_of_adult')->nullable();
+            $table->integer('number_of_childrent')->nullable();
+            $table->integer('total_price')->nullable();
+            $table->Integer('tour_guide_id')->nullable();
             $table->timestamps();
         });
     }

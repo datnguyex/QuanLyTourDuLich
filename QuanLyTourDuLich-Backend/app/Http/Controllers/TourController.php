@@ -5,7 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Tour;
 use App\Models\User;
+use App\Models\TourGuide;
+use App\Models\Customer;
+use App\Models\Contact;
 use App\Models\Images;
+use App\Models\Booking;
 use App\Models\Schedule;
 use App\Models\HashSecret;
 use Storage;
@@ -319,7 +323,6 @@ class TourController extends Controller
             ], 500);
         }
     }
-<<<<<<< HEAD
     
     // private function encryptId($id, $key) {
     //     $method = 'AES-256-CBC';
@@ -341,9 +344,6 @@ class TourController extends Controller
     // }
     
     
-=======
-
->>>>>>> home
     public function displayNewstTour(Request $request) {
         try {
             $key = 'dat123';
@@ -375,16 +375,13 @@ class TourController extends Controller
                 ], 200);
             }
 
-<<<<<<< HEAD
         } catch (QueryException $e) {
             return response()->json([
                 "message" => "Database query error",
                 "error" => $e->getMessage()
             ], 500);
-        } catch (\Exception $e) {
-=======
-        }catch (\Exception $e) {
->>>>>>> home
+        } 
+        catch (\Exception $e) {
             return response()->json([
                 "message" => "An unknown error occurred",
                 "error" => $e->getMessage()
@@ -392,8 +389,155 @@ class TourController extends Controller
         }
     }
     //dat tour
-    public function BookTour(Request $request) {
+    public function isValidEmail($username)
+    {   
+        return filter_var($username, FILTER_VALIDATE_EMAIL);
+    }
+    public function bookTour(Request $request) {
+        $key = 'dat123';
+        try {
+            $validatedData = $request->validate([
+                'tour_id' => 'required',
+                'nameContact' => 'required|string|max:255|min:5|',
+                'emailContact' => 'required|string|min:10|max:255|regex:/^\S*$/',
+                'nameCustomer' => 'required|string|max:255|min:5|',
+                'emailCustomer' => 'required|string|min:10|max:255|regex:/^\S*$/',
+                'emailCustomer' => 'required|string|min:10|max:255|regex:/^\S*$/',
+                'totalPrice' => 'required|numeric|min:0',
+                'type_customer' => 'required|in:self,other',
+                'number_of_adult' => 'required|numeric|min:0',
+                'number_of_childrent' => 'required|numeric|min:0',
+            ], [
+                'tour_id' => 'tour id is required',
+                'nameContact.required' => 'name contact is required',
+                'nameContact.max' => 'name contact must be between 5 and 255 characters.',
+                'nameContact.min' => 'name contact must be between 5 and 255 characters.',
+                'emailContact.required' => 'email contact is required.',
+                'emailContact.min' => 'email contact must be between 10 and 255 characters.',
+                'emailContact.max' => 'email contact must be between 10 and 255 characters.',
+                'emailContact.regex' => 'email contact  cannot contain spaces.',
+                'nameCustomer.required' => 'name customer is required.',
+                'nameCustomer.max' => 'name customer must be between 5 and 255 characters.',
+                'emailCustomer.required' => 'email contact is required.',
+                'emailCustomer.min' => 'email contact must be between 10 and 255 characters.',
+                'emailCustomer.max' => 'email contact must be between 10 and 255 characters.',
+                'emailCustomer.regex' => 'email contact cannot contain spaces.',
+                'totalPrice.required' => 'total price is required',
+                'totalPrice.numeric' => 'total price must be a number',
+                'totalPrice.numeric' => 'must not be less than 0',
+                'type_customer.required' => 'type is required',
+                'type_customer.in' => 'invalid type',
+                'number_of_adult.required' => 'number of adult is required',
+                'number_of_adult.numeric' => 'number of adult must be a number',
+                'number_of_adult.min' => 'number of adult must not be less than 0',
+                'number_of_childrent.required' => 'number of children is required',
+                'number_of_childrent.numeric' => 'number of children must be a number',
+                'number_of_childrent.min' => 'number of children must not be less than 0',
+            ]);
 
+            $encodedTourId = $validatedData['tour_id'];
+            $user = new User(); 
+            $tourId = $user->decryptId($encodedTourId, $key); 
+            if (!$tourId) {
+                return response()->json([
+                    "error" => ["Invalid tour ID."],
+                ], 404);
+            }
+
+
+
+            if(!$this->isValidEmail($validatedData['emailContact'])) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => [
+                        'emailContact' => ['Email must be formatted as follows: abc@gmail.com.']
+                    ],
+                ], 422);
+            } else if(!$this->isValidEmail($validatedData['emailCustomer'])) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => [
+                        'emailCustomer' => ['Email must be formatted as follows: abc@gmail.com.']
+                    ],
+                ], 422);
+            }
+            else if(User::find($validatedData['emailCustomer']) || TourGuide::find($validatedData['emailCustomer'])) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => [
+                        'emailCustomer' => ['Email already exists']
+                    ],
+                ], 422);
+            }
+            else if(User::find($validatedData['emailContact']) || TourGuide::find($validatedData['emailContact'])) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => [
+                        'emailContact' => ['Email already exists']
+                    ],
+                ], 422);
+            }
+
+            $contact = Contact::create([
+               'name' => $validatedData['nameContact'],
+               'email' => $validatedData['emailContact'],  
+            ]);
+            if(!$contact) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => [
+                        'error' => ['An error occurred when creating contact information']
+                    ],
+                ], 422);
+            }
+            if($validatedData['type_customer'] == 'other') {
+                $customer = Customer::create([
+                    'contact_id' => $contact->id,
+                    'name' => $validatedData['nameCustomer'],
+                    'email' => $validatedData['emailCustomer'],
+                    'type_customer' => $validatedData['type_customer'],
+                ]);
+            } else if($validatedData['type_customer'] == 'self') {
+                $customer = Customer::create([
+                    'contact_id' => $contact->id,
+                    'type_customer' => $validatedData['type_customer'],
+                ]);
+            }
+            if(!$customer) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => [
+                        'error' => ['An error occurred when creating customer information']
+                    ],
+                ], 422);
+            }
+            $number_of_people = $validatedData['number_of_adult'] + $validatedData['number_of_childrent'];
+            $booking = Booking::create([
+                'tour_id' => $tourId,
+                'customer_id' => $customer->id,
+                'number_of_adult' =>  $validatedData['number_of_adult'],
+                'number_of_childrent' =>  $validatedData['number_of_childrent'],
+                'number_of_people' =>  $number_of_people,
+                'total_price' =>  $validatedData['totalPrice'],
+            ]);
+            if(!$booking) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => [
+                        'error' => ['An error occurred when creating booking information']
+                    ],
+                ], 422);
+            }
+            return response()->json([
+                'message' => 'Booking the tour successfully',
+                'booking' => $booking,
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'submit failed',
+                'errors' => $e->validator->errors(),
+            ], 422);
+        }
     }
     //xem chi tiet tour
     public function TourDetail(Request $request) {

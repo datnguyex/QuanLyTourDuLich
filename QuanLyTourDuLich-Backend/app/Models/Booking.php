@@ -15,7 +15,10 @@ class Booking extends Model
         "tour_id",
         "customer_id",
         "booking_date",
-        "number_of_tikers",
+        "number_of_people",
+        "number_of_adult",
+        "number_of_children",  
+        "total_price",  
         "tour_guide_id",
     ];
 
