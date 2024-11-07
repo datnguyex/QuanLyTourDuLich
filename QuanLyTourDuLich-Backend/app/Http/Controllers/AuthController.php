@@ -138,8 +138,9 @@ class AuthController extends Controller
                 catch (\Exception $e) {
                     return response()->json([
                         'errors' => [
-                            'mail' => 'Cannot send email'
+                            'username' => ['Cannot send email']
                         ],
+                        
                     ], 422);
                 }
                 

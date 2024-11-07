@@ -399,10 +399,10 @@ class TourController extends Controller
             $validatedData = $request->validate([
                 'tour_id' => 'required',
                 'nameContact' => 'required|string|max:255|min:5|',
-                'emailContact' => 'required|string|min:10|max:255|regex:/^\S*$/',
+              'emailContact' => 'required|string|min:10|max:255|regex:/^\S*$/|unique:contacts,email',
                 'nameCustomer' => 'required|string|max:255|min:5|',
-                'emailCustomer' => 'required|string|min:10|max:255|regex:/^\S*$/',
-                'emailCustomer' => 'required|string|min:10|max:255|regex:/^\S*$/',
+              'emailCustomer' => 'required|string|min:10|max:255|regex:/^\S*$/|unique:customers,email',
+                // 'emailCustomer' => 'required|string|min:10|max:255|regex:/^\S*$/',
                 'totalPrice' => 'required|numeric|min:0',
                 'type_customer' => 'required|in:self,other',
                 'number_of_adult' => 'required|numeric|min:0',
@@ -416,12 +416,14 @@ class TourController extends Controller
                 'emailContact.min' => 'email contact must be between 10 and 255 characters.',
                 'emailContact.max' => 'email contact must be between 10 and 255 characters.',
                 'emailContact.regex' => 'email contact  cannot contain spaces.',
+                'emailContact.unique' => 'email already exists in the system',
                 'nameCustomer.required' => 'name customer is required.',
                 'nameCustomer.max' => 'name customer must be between 5 and 255 characters.',
                 'emailCustomer.required' => 'email contact is required.',
                 'emailCustomer.min' => 'email contact must be between 10 and 255 characters.',
                 'emailCustomer.max' => 'email contact must be between 10 and 255 characters.',
                 'emailCustomer.regex' => 'email contact cannot contain spaces.',
+                'emailCustomer.unique' => 'email already exists in the system',
                 'totalPrice.required' => 'total price is required',
                 'totalPrice.numeric' => 'total price must be a number',
                 'totalPrice.numeric' => 'must not be less than 0',
@@ -443,9 +445,6 @@ class TourController extends Controller
                     "error" => ["Invalid tour ID."],
                 ], 404);
             }
-
-
-
             if(!$this->isValidEmail($validatedData['emailContact'])) {
                 return response()->json([
                     'message' => 'Validation failed',
@@ -461,22 +460,41 @@ class TourController extends Controller
                     ],
                 ], 422);
             }
-            else if(User::find($validatedData['emailCustomer']) || TourGuide::find($validatedData['emailCustomer'])) {
-                return response()->json([
-                    'message' => 'Validation failed',
-                    'errors' => [
-                        'emailCustomer' => ['Email already exists']
-                    ],
-                ], 422);
-            }
-            else if(User::find($validatedData['emailContact']) || TourGuide::find($validatedData['emailContact'])) {
-                return response()->json([
-                    'message' => 'Validation failed',
-                    'errors' => [
-                        'emailContact' => ['Email already exists']
-                    ],
-                ], 422);
-            }
+            // else if (Contact::where('email', $validatedData['emailContact'])->exists()) {
+            //     return response()->json([
+            //         'message' => 'Validation failed',
+            //         'errors' => [
+            //             'emailContact' => ['Email already exists']
+            //         ],
+            //     ], 422);
+            // } 
+            // else if (Contact::where('email', $validatedData['emailCustomer'])->exists()) {
+            //     return response()->json([
+            //         'message' => 'Validation failed',
+            //         'errors' => [
+            //             'emailCustomer' => ['Email already exists']
+            //         ],
+            //     ], 422);
+            // }
+            // else if(User::find($validatedData['emailCustomer']) || TourGuide::find($validatedData['emailCustomer'])) {
+            //     return response()->json([
+            //         'message' => 'Validation failed',
+            //         'errors' => [
+            //             'emailCustomer' => ['Email already exists']
+            //         ],
+            //     ], 422);
+            // }
+            // else if(User::find($validatedData['emailContact']) || TourGuide::find($validatedData['emailContact'])) {
+            //     return response()->json([
+            //         'message' => 'Validation failed',
+            //         'errors' => [
+            //             'emailContact' => ['Email already exists']
+            //         ],
+            //     ], 422);
+            // }
+          
+            
+           
 
             $contact = Contact::create([
                'name' => $validatedData['nameContact'],
