@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('duration', 100);
             $table->Integer('price');
             $table->Integer('price_children')->nullable();
-            $table->date('start_date');
-            $table->date('end_date');
+            $table->date('start_date')->nullable();
+            $table->date('end_date')->nullable();
             $table->string('location', 100);
             $table->boolean('availability')->nullable();
             $table->timestamps();
