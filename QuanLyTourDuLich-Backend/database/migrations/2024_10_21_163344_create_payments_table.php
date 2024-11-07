@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->Integer('tour_id');
             $table->Integer('number_of_tickers');
-            $table->float('total_price');
+            $table->Integer('total_price');
             $table->Integer('user_id')->nullable();
             $table->enum('payment_method', ['transfer', 'cash']);
             $table->enum('status', ['pending', 'completed', 'failed', 'refunded'])->default('pending');

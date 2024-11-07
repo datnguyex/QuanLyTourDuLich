@@ -52,7 +52,7 @@ class PaymentController extends Controller
             $validatedData = $request->validate([
                 'tour_id' => 'nullable',
                 'number_of_tickers' => 'required|integer',
-                'total_price' => 'required|numeric',
+                'total_price' => 'required|integer',
                 'user_id' => 'nullable',
                 'payment_method' => 'required|in:transfer,cash',
                 'status' => 'required|in:pending,completed,failed,refunded',
