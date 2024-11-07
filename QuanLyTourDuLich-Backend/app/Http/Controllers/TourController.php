@@ -27,12 +27,34 @@ class TourController extends Controller
     public function index(Request $request)
     {
         try {
+            // Lấy số lượng tour mỗi trang từ request
             $perPage = $request->input('per_page', 10);
-            $tours = Tour::with('images', 'schedules')->orderBy('id', 'desc')->paginate($perPage);
-            // Tạo mảng tour tùy chỉnh
+
+            // Lấy tham số sắp xếp từ query string (mặc định sắp xếp theo giá)
+            $sortBy = $request->query('sort', 'price');
+
+            // Khởi tạo truy vấn
+            $tours = Tour::with('images', 'schedules');
+
+            // Sắp xếp theo tiêu chí
+            switch ($sortBy) {
+                case 'price':
+                    $tours->orderBy('price', 'desc'); // Sắp xếp theo giá giảm dần
+                    break;
+                case 'latest':
+                    $tours->orderBy('created_at', 'desc'); // Sắp xếp theo thời gian tạo mới nhất
+                    break;
+                default:
+                    return response()->json(['message' => 'Invalid sort parameter.'], 400);
+            }
+
+            // Phân trang kết quả
+            $tours = $tours->paginate($perPage);
+
+            // Tạo mảng tour tùy chỉnh để trả về
             $toursArray = $tours->getCollection()->map(function ($tour) {
                 return [
-                    'id' => HashSecret::encrypt($tour->id), // Hoặc trường khác bạn muốn
+                    'id' => HashSecret::encrypt($tour->id), // Mã hóa ID tour
                     'name' => $tour->name,
                     'description' => $tour->description,
                     'duration' => $tour->duration,
@@ -42,9 +64,10 @@ class TourController extends Controller
                     'location' => $tour->location,
                     'availability' => $tour->availability,
                     'images' => $tour->images,
-                    'schedules' => $tour->schedules
+                    'schedules' => $tour->schedules,
                 ];
             });
+
             return response()->json([
                 'tours' => $toursArray,
                 'links' => [
@@ -52,18 +75,19 @@ class TourController extends Controller
                     'prev' => $tours->previousPageUrl(),
                 ],
                 'meta' => [
-                    'current_page' => $tours->currentPage(), // Phương thức currentPage()
+                    'current_page' => $tours->currentPage(),
                     'last_page' => $tours->lastPage(),
                     'per_page' => $tours->perPage(),
                     'total' => $tours->total(),
                 ]
             ], 200);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             return response()->json([
-                'error'=> $e->getMessage()
-            ],500);
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
+
 
      /**
       * Create tour
