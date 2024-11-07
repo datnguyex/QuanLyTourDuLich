@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rule;
+use App\Models\User;
 
 class TourGuide extends Model
 {
@@ -92,8 +94,13 @@ class TourGuide extends Model
             'experience.min' => 'Experience must be at least 0.'
         ]);
     
+       
+        
         if ($validator->fails()) {
             throw new ValidationException($validator);
+        }
+        if (User::where('username', $data['email'])->exists()) {
+            throw ValidationException::withMessages(['email' => 'This email already exists in the system.']);
         }
     
         if (!$this->isValidEmail($data['email'])) {
@@ -103,6 +110,8 @@ class TourGuide extends Model
         if (!$this->isValidPhoneNumber($data['phone'])) {
             throw ValidationException::withMessages(['phone' => 'Phone number must be formatted as follows: 0123456789 or +84123456789.']);
         }
+
+    
     
         // Check for existing phone number
         $phoneNumber = '0' . substr($data['phone'], 3);
@@ -158,77 +167,103 @@ class TourGuide extends Model
     }
     public function updateTourGuide($data, $key)
     {
-        $validatedData = Validator::make($data, [
-            'tour_id' => 'required',
-            'email' => 'required|string|max:255|min:10|regex:/^\S*$/|unique:tour_guides,email',
-            'name' => 'required|string|max:255|min:5|regex:/^[\p{L}\s]+$/u',
-            'phone' => 'required|min:10|unique:tour_guides,phone',
-            'experience' => 'required|min:0|numeric',
-        ], [
-            'email.required' => 'Email is required.',
-            'email.max' => 'Email must be between 10 and 255 characters.',
-            'email.min' => 'Email must be between 10 and 255 characters.',
-            'email.regex' => 'Email cannot contain spaces.',
-            'email.unique' => 'This email already exists in the system.',
-            'name.required' => 'Name is required.',
-            'name.max' => 'Name must be between 5 and 255 characters.',
-            'name.min' => 'Name must be between 5 and 255 characters.',
-            'name.regex' => 'Name can only contain letters and spaces, and cannot include special characters.',
-            'phone.required' => 'Phone is required.',
-            'phone.min' => 'Phone number must be at least 10 characters',
-            'phone.unique' => 'Phone number already exists.',
-            'experience.required' => 'Experience is required.',
-            'experience.numeric' => 'Experience must be a number.',
-            'experience.min' => 'Experience must be at least 0.'
-        ]);
-        
-      
-
+        // Xây dựng điều kiện validate linh hoạt: chỉ validate những trường người dùng gửi lên.
+        $rules = [];
+        $messages = [];
+    
+        if (isset($data['email'])) {
+            $rules['email'] = 'string|max:255|min:10|regex:/^\S*$/|unique:tour_guides,email';
+            $messages['email.max'] = 'Email must be between 10 and 255 characters.';
+            $messages['email.min'] = 'Email must be between 10 and 255 characters.';
+            $messages['email.regex'] = 'Email cannot contain spaces.';
+            $messages['email.unique'] = 'This email already exists in the system.';
+        }
+    
+        if (isset($data['name'])) {
+            $rules['name'] = 'string|max:255|min:5|regex:/^[\p{L}\s]+$/u';
+            $messages['name.max'] = 'Name must be between 5 and 255 characters.';
+            $messages['name.min'] = 'Name must be between 5 and 255 characters.';
+            $messages['name.regex'] = 'Name can only contain letters and spaces, and cannot include special characters.';
+        }
+    
+        if (isset($data['phone'])) {
+            $rules['phone'] = 'min:10|unique:tour_guides,phone';
+            $messages['phone.required'] = 'Phone is required.';
+            $messages['phone.min'] = 'Phone number must be at least 10 characters';
+            $messages['phone.unique'] = 'Phone number already exists.';
+        }
+    
+        if (isset($data['experience'])) {
+            $rules['experience'] = 'numeric|min:0';
+            $messages['experience.numeric'] = 'Experience must be a number.';
+            $messages['experience.min'] = 'Experience must be at least 0.';
+        }
+    
+        // Validate dữ liệu
+        $validatedData = Validator::make($data, $rules, $messages);
+    
         if ($validatedData->fails()) {
             throw new ValidationException($validatedData);
         }
     
-     
-        $validatedData = $validatedData->validated();
+       
+        if (isset($data['email']) && User::where('username', $data['email'])->exists()) {
+            throw ValidationException::withMessages(['email' => 'This email already exists in the system.']);
+        }
     
-        if (!$this->isValidEmail($validatedData['email'])) {
+      
+        if (isset($data['email']) && !$this->isValidEmail($data['email'])) {
             throw ValidationException::withMessages(['email' => 'Email must be formatted as follows: abc@gmail.com.']);
         }
     
-        if (!$this->isValidPhoneNumber($validatedData['phone'])) {
+        // Kiểm tra nếu phone hợp lệ
+        if (isset($data['phone']) && !$this->isValidPhoneNumber($data['phone'])) {
             throw ValidationException::withMessages(['phone' => 'Phone number must be formatted as follows: 0123456789 or +84123456789.']);
         }
     
-  
-        $phone = $validatedData['phone'];
-        $phoneNumber = '0' . substr($phone, 3);
-        $phoneNumber2 = '+84' . substr($phone, 1);
+        // Kiểm tra nếu phone đã tồn tại
+        if (isset($data['phone'])) {
+            $phone = $data['phone'];
+            $phoneNumber = '0' . substr($phone, 3);
+            $phoneNumber2 = '+84' . substr($phone, 1);
     
-       
-        $existingPhone = self::where('phone', $phoneNumber)->orWhere('phone', $phoneNumber2)->first();
-        if ($existingPhone) {
-            throw ValidationException::withMessages(['phone' => 'Phone number already exists.']);
+            $existingPhone = self::where('phone', $phoneNumber)->orWhere('phone', $phoneNumber2)->first();
+            if ($existingPhone) {
+                throw ValidationException::withMessages(['phone' => 'Phone number already exists.']);
+            }
         }
     
-    
-        $encodedTourId = $validatedData['tour_id'];
+       
+        $encodedTourId = $data['tour_id'];
         $tourId = $this->decryptId($encodedTourId, $key);
         if (!$tourId) {
             throw ValidationException::withMessages(['error' => 'Invalid tour ID.']);
         }
     
+      
         $tourGuide = self::find($tourId);
         if (!$tourGuide) {
-            throw ValidationException::withMessages(['error' => 'Tour guide not found']);        
+            throw ValidationException::withMessages(['error' => 'Tour guide not found']);
         }
     
       
-        $tourGuide->name = $validatedData['name'];
-        $tourGuide->email = $validatedData['email'];
-        $tourGuide->phone = $validatedData['phone'];
-        $tourGuide->experience = $validatedData['experience'];
+        if (isset($data['name'])) {
+            $tourGuide->name = $data['name'];
+        }
+        if (isset($data['email'])) {
+            $tourGuide->email = $data['email'];
+        }
+        if (isset($data['phone'])) {
+            $tourGuide->phone = $data['phone'];
+        }
+        if (isset($data['experience'])) {
+            $tourGuide->experience = $data['experience'];
+        }
+    
+        // Lưu thay đổi
         $tourGuide->save();
     
         return $tourGuide;
-    } 
+    }
+    
 }

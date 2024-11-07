@@ -350,7 +350,7 @@ class TourController extends Controller
             });
             if ($newstTour->isEmpty()) {
                 return response()->json([
-                    "message" => "Tour not found",
+                    "message" => "Tours not found",
                 ], 404);
             } else {
                 return response()->json([
@@ -373,7 +373,7 @@ class TourController extends Controller
     }
     //dat tour
     public function BookTour(Request $request) {
-
+        
     }
     //xem chi tiet tour
     public function TourDetail(Request $request) {
