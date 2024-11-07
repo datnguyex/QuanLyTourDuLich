@@ -16,7 +16,7 @@ class TourSeeder extends Seeder
             [
                 'name' => 'Beach Paradise',
                 'description' => 'Relax at the beautiful beach with sunbathing, swimming, and water sports. Enjoy beach volleyball, paddleboarding, and a refreshing drink at a beach bar while watching the sunset.',
-                'duration' => '1 Day',
+                'duration' => '3',
                 'price' => 780000,
                 'price_children' => 250000,
                 'start_date' => '2024-06-01',
@@ -24,10 +24,10 @@ class TourSeeder extends Seeder
                 'location' => 'Bahamas',
                 'availability' => true,
             ],
-            [   
+            [
                 'name' => 'Mountain Adventure',
                 'description' => 'A thrilling hike through majestic mountains with breathtaking views, lush forests, and expert guides. Enjoy campfire evenings and learn about local ecology and history.',
-                'duration' => '3 Days',
+                'duration' => '5',
                 'price' => 880000,
                 'price_children' => 440000,
                 'start_date' => '2024-07-10',
@@ -38,7 +38,7 @@ class TourSeeder extends Seeder
             [
                 'name' => 'City Tour',
                 'description' => 'Explore New York’s famous landmarks like Central Park and the Statue of Liberty. Enjoy guided tours, art, food, and lively street performances.',
-                'duration' => '2 Days',
+                'duration' => '4',
                 'price' => 600000,
                 'price_children' => 300000,
                 'start_date' => '2024-08-15',
@@ -49,7 +49,7 @@ class TourSeeder extends Seeder
             [
                 'name' => 'Desert Safari',
                 'description' => 'Experience a thrilling desert safari with dune bashing, camel rides, and cultural insights. Enjoy a BBQ dinner and activities like sandboarding and henna painting.',
-                'duration' => '1 Day',
+                'duration' => '5',
                 'price' => 70000,
                 'price_children' => 300000,
                 'start_date' => '2024-09-01',
@@ -60,7 +60,7 @@ class TourSeeder extends Seeder
             [
                 'name' => 'Historical Tour',
                 'description' => 'Visit UNESCO World Heritage Sites and learn about ancient civilizations. Explore archaeological sites and hear captivating stories from local historians.',
-                'duration' => '5 Days',
+                'duration' => '5',
                 'price' => 950000,
                 'price_children' => 450000,
                 'start_date' => '2024-10-01',
@@ -119,7 +119,7 @@ class TourSeeder extends Seeder
             //     'availability' => true,
             // ],
         ];
-        
+
         DB::table('tours')->insert($tours);
     }
 }

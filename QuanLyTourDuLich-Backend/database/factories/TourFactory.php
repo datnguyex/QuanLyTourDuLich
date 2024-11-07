@@ -17,13 +17,13 @@ class TourFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->sentence(3), // Generates a random name
+            'name' => $this->faker->sentence(5), // Generates a random name
             'description' => $this->faker->paragraph(), // Generates a random description
-            'duration' => $this->faker->word(), // Generates a random duration
-            'price' => $this->faker->numberBetween(100, 1000), // Generates a random price between 100 and 1000
+            'duration' => $this->faker->numberBetween(3, 10), // Generates a random duration
+            'price' => $this->faker->numberBetween(10000, 700000), // Generates a random price between 100 and 1000
             'start_date' => $this->faker->date(), // Generates a random start date
             'end_date' => $this->faker->date(), // Generates a random end date
-            'location' => $this->faker->city(), // Generates a random location
+            'location' => $this->faker->city() . ', ' . $this->faker->country(), // Generates a random location
             'availability' => $this->faker->boolean(), // Generates a random availability status
         ];
     }

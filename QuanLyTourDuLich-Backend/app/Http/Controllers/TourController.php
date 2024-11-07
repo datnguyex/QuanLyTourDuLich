@@ -28,7 +28,7 @@ class TourController extends Controller
     {
         try {
             $perPage = $request->input('per_page', 10);
-            $tours = Tour::with('images', 'schedules')->paginate($perPage);
+            $tours = Tour::with('images', 'schedules')->orderBy('id', 'desc')->paginate($perPage);
             // Tạo mảng tour tùy chỉnh
             $toursArray = $tours->getCollection()->map(function ($tour) {
                 return [
@@ -73,17 +73,18 @@ class TourController extends Controller
      public function store(Request $request)
      {
         try {
+            // dd($request);
             $schedule = null;
             //Make vaildate for variable
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
                 'description' => 'required|string',
                 'duration' => 'required|integer',
-                'price' => 'required|numeric',
+                'price' => 'required|integer',
                 // 'start_date' => 'required|date',
                 // 'end_date' => 'required|date|after:start_date',
                 'location' => 'required|string',
-                'images.*' => 'required|file|image|mimes:png,jpg,svg',
+                'images.*' => 'required|file',
                 'schedules' => 'nullable',
             ]);
 
@@ -161,11 +162,11 @@ class TourController extends Controller
                 'name' => 'required|string|max:255',
                 'description' => 'required|string',
                 'duration' => 'required|integer',
-                'price' => 'required|numeric',
+                'price' => 'required|integer',
                 // 'start_date' => 'required|date',
                 // 'end_date' => 'required|date|after:start_date',
                 'location' => 'required|string',
-                'images.*' => 'file|image|mimes:png,jpg,svg',
+                'images.*' => 'nullable',
                 'schedules' => 'nullable',
             ]);
 
@@ -451,7 +452,7 @@ class TourController extends Controller
             //             'emailContact' => ['Email already exists']
             //         ],
             //     ], 422);
-            // } 
+            // }
             // else if (Contact::where('email', $validatedData['emailCustomer'])->exists()) {
             //     return response()->json([
             //         'message' => 'Validation failed',
@@ -476,9 +477,9 @@ class TourController extends Controller
             //         ],
             //     ], 422);
             // }
-          
-            
-           
+
+
+
 
             $contact = Contact::create([
                'name' => $validatedData['nameContact'],
