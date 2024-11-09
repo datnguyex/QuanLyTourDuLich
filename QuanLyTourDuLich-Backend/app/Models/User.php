@@ -55,6 +55,7 @@ class User extends Authenticatable
         $encryptedId = openssl_encrypt($id, $method, $key, 0, $iv);
         return base64_encode($iv . $encryptedId);
     }
+
     
         
     public function decryptId($encryptedId, $key) {
@@ -75,10 +76,16 @@ class User extends Authenticatable
     public static function createUser($request)
     {
         return self::create([
-            'username' => $request['username'], 
+            'name' => $request['name'],  // Thêm name
+            'username' => $request['username'],
+            'email' => $request['email'],  // Thêm email
             'password' => Hash::make($request['password']),
             'role' => $request['role'],
         ]);
     }
   
+    public function details()
+{
+    return $this->hasOne(UserDetails::class, 'user_id');
+}
 }
