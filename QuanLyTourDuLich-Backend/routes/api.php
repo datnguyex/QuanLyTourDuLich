@@ -70,6 +70,7 @@ Route::post('deleteTourGuide',[TourGuideController::class,'deleteTourGuide']);
 Route::post('UpdateTourGuide',[TourGuideController::class,'UpdateTourGuide']);
 Route::post('addTourToFavorite',[FavoriteController::class,'addTourToFavorite']);
 Route::get('TourDetail',[TourController::class,'TourDetail']);
+Route::post('bookTour',[TourController::class,'bookTour']);
 Route::get('displayNewstTour',[TourController::class,'displayNewstTour']);
 Route::post('login',[AuthController::class,'login']);
 Route::middleware('auth:sanctum')->group(function(){

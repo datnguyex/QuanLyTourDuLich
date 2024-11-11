@@ -13,12 +13,14 @@ return new class extends Migration
     {
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
-            $table->string('name',100)->unique();
-            $table->enum('gender', ['male','female','other']);
-            $table->date('dob');
+            $table->integer('contact_id');
+            $table->string('name',100)->nullable();
+            $table->string('email')->unique()->nullable();
+            $table->enum('gender', ['male','female','other'])->nullable();
+            $table->date('dob')->nullable();
             $table->enum('type_customer', ['self','other']);
-            $table->string('nationality',100)->unique();
-            $table->string('passport_number',100)->unique();
+            $table->string('nationality',100)->unique()->nullable();
+            $table->string('passport_number',100)->unique()->nullable();
             $table->timestamps();
         });
     }
