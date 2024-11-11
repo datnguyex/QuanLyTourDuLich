@@ -13,14 +13,16 @@ return new class extends Migration
     {
         Schema::create('user_details', function (Blueprint $table) {
             $table->id(); 
-            $table->Integer('user_id');
+            $table->unsignedBigInteger('user_id'); 
             $table->string('phone', 20)->nullable(); 
             $table->string('address', 100)->nullable(); 
-            $table->string('email', 100)->nullable();
+            // $table->string('email', 100)->nullable();
             $table->string('profile_picture', 100)->nullable(); 
             $table->enum('gender', ['male', 'female', 'other'])->nullable();
             $table->date('dob')->nullable(); 
             $table->timestamps(); 
+
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

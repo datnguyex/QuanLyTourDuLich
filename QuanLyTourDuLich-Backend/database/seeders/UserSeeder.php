@@ -14,38 +14,31 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // Tạo hoặc cập nhật nếu username đã tồn tại
-        User::updateOrCreate(
-            ['username' => 'admin'],
-            [
-                'name' => 'Admin User',
-                'email' => 'admin@example.com',
-                'password' => Hash::make('password123'),
-                'role' => 1,
-                'email_verified_at' => now(),
-            ]
-        );
+        User::create([
+            'name' => 'Toàn đẹp trai VIP promax',
+            'username' => 'toanvip',
+            'password' => Hash::make('password123'),
+            'email' => 'toanvip@example.com',
+            'role' => '1',
+            'email_verified_at' => now(),
+        ]);
 
-        User::updateOrCreate(
-            ['username' => 'user1'],
-            [
-                'name' => 'Normal User',
-                'email' => 'user1@example.com',
-                'password' => Hash::make('password123'),
-                'role' => 2,
-                'email_verified_at' => now(),
-            ]
-        );
+        User::create([
+            'name' => 'Hiệp đẹp trai',
+            'username' => 'hiepvip',
+            'password' => Hash::make('password123'),
+            'email' => 'hiepvip@example.com',
+            'role' => '2',
+            'email_verified_at' => now(),
+        ]);
 
-        User::updateOrCreate(
-            ['username' => 'manager'],
-            [
-                'name' => 'Manager User',
-                'email' => 'manager@example.com',
-                'password' => Hash::make('Dat72@@##!!aa'),
-                'role' => 3,
-                'email_verified_at' => now(),
-            ]
-        );
-       
+        User::create([
+            'name' => 'Đạt đẹp trai',
+            'username' => 'datvip',
+            'password' => Hash::make('password123'),
+            'email' => 'datvip@example.com',
+            'role' => '3',
+            'email_verified_at' => now(),
+        ]);
     }
 }
