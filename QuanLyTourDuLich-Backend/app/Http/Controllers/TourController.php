@@ -15,7 +15,6 @@ use App\Models\HashSecret;
 use Storage;
 use File;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Hash;
 
 
 class TourController extends Controller
@@ -355,11 +354,11 @@ class TourController extends Controller
 
     public function displayNewstTour(Request $request) {
         try {
-            $key = 'dat123';
             $newstTour = Tour::getLatestTours();
-            $encryptedTours = $newstTour->map(function($tour) use ($key) {
+
+            $encryptedTours = $newstTour->map(function($tour) {
                 return [
-                    'id' => (new User())->encryptId($tour->id, $key),
+                    'id' => HashSecret::encrypt($tour->id),
                     'name' => $tour->name,
                     'description' => $tour->description,
                     'duration' => $tour->duration,
@@ -447,8 +446,7 @@ class TourController extends Controller
             ]);
 
             $encodedTourId = $validatedData['tour_id'];
-            $user = new User();
-            $tourId = $user->decryptId($encodedTourId, $key);
+            $tourId = HashSecret::decrypt($encodedTourId);
             if (!$tourId) {
                 return response()->json([
                     "error" => ["Invalid tour ID."],
@@ -566,9 +564,10 @@ class TourController extends Controller
             ], 422);
         }
     }
+
+
     //xem chi tiet tour
     public function TourDetail(Request $request) {
-        $key = 'dat123';
         try {
 
             $validatedData = $request->validate([
@@ -577,8 +576,7 @@ class TourController extends Controller
                 'tour_id.required' => 'Tour ID is required.',
             ]);
             $encodedTourId = $validatedData['tour_id'];
-            $user = new User();
-            $tourId = $user->decryptId($encodedTourId, $key);
+            $tourId = HashSecret::decrypt($encodedTourId);
             if (!$tourId) {
                 return response()->json([
                     "error" => "Invalid tour ID.",
@@ -616,16 +614,36 @@ class TourController extends Controller
     public function findByLocation($location)
     {
         try {
-            $results = Tour::findByLocation($location)->get();
+            $tours = Tour::findByLocation($location)->with('images')->get();
             // Check if results are found
-            if ($results->isEmpty()) {
+            if ($tours->isEmpty()) {
                 return response()->json([
                     'message' => 'Tour Not Foud.'
                 ], 404);
             }
 
+            $toursArray = $tours->map(function ($tour) {
+                return [
+                    'id' => HashSecret::encrypt($tour->id), // Mã hóa ID tour
+                    'name' => $tour->name,
+                    'description' => $tour->description,
+                    'duration' => $tour->duration,
+                    'price' => $tour->price,
+                    'start_date' => $tour->start_date,
+                    'end_date' => $tour->end_date,
+                    'location' => $tour->location,
+                    'availability' => $tour->availability,
+                    'images' => $tour->images,
+                    'schedules' => $tour->schedules,
+                ];
+            });
+
+
             // Return the results
-            return response()->json($results, 200);
+            return response()->json([
+                'tours' => $toursArray,
+            ]
+            ,200);
 
         } catch (\Exception $e) {
             return response()->json([

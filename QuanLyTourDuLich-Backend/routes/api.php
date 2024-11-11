@@ -1,7 +1,7 @@
 <?php
 
 
-use App\Http\Controllers\BookingController;
+
 use Illuminate\Http\Request;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
@@ -10,6 +10,8 @@ use App\Http\Controllers\TourController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\TourGuideController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\ReviewController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -48,6 +50,17 @@ Route::prefix('payments')->controller(PaymentController::class)->group(function 
     Route::post('/momo_payment', 'momo_payment');
     Route::post('/momo/ipn', 'momoIPN');
 });
+
+/**Group api  reviews*/
+Route::prefix('reviews')->controller(ReviewController::class)->group(function () {
+    Route::get('/list', 'index');
+    Route::get('{id}', 'show');
+    Route::put('{id}', 'update');
+    Route::delete('{id}', 'destroy');
+    Route::post('/', 'store');
+    Route::put('/{id}/status', 'updateStatus');
+});
+
 
 
 /**Group api booking */
