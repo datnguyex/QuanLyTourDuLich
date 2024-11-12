@@ -20,6 +20,8 @@ class DatabaseSeeder extends Seeder
         // $this->call(TourSeeder::class);
         // $this->call(ImageSeeder::class);
         $this->call(TourGuideSeeder::class,);
+        $this->call(CustomerSeeder::class);
+        $this->call(BookingSeeder::class);
 
         // \App\Models\User::factory(10)->create();
 

@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
         // Tạo hoặc cập nhật nếu username đã tồn tại
         User::create([
             'name' => 'Toàn đẹp trai VIP promax',
-            'username' => 'toanvip',
+            'username' => 'toanvvip1',
             'password' => Hash::make('password123'),
             'email' => 'toanvip@example.com',
             'role' => '1',
@@ -25,7 +25,7 @@ class UserSeeder extends Seeder
 
         User::create([
             'name' => 'Hiệp đẹp trai',
-            'username' => 'hiepvip',
+            'username' => 'hiepvvip1',
             'password' => Hash::make('password123'),
             'email' => 'hiepvip@example.com',
             'role' => '2',
@@ -34,7 +34,7 @@ class UserSeeder extends Seeder
 
         User::create([
             'name' => 'Đạt đẹp trai',
-            'username' => 'datvip',
+            'username' => 'datvvip1',
             'password' => Hash::make('password123'),
             'email' => 'datvip@example.com',
             'role' => '3',

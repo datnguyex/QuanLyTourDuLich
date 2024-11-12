@@ -11,6 +11,8 @@ use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\TourGuideController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\UserDetailsController;
+use App\Http\Controllers\StatisticalController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -137,3 +139,5 @@ Route::prefix('users')->group(function () {
     Route::put('{id}', [UserDetailsController::class, 'update']);     // Cập nhật thông tin người dùng
     Route::post('/users/{id}/uploadProfilePicture', [UserDetailsController::class, 'uploadProfilePicture']);
 });
+
+Route::get('/statistics/{timeframe}', [StatisticalController::class, 'getStatistics']);

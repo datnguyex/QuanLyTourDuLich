@@ -12,35 +12,35 @@ class TourGuideSeeder extends Seeder
         // Create five tour guides
         TourGuide::create([
             'name' => 'Alice Smith',
-            'email' => 'alice@example.com',
+            'email' => 'alice1@example.com',
             'phone' => '0329169799',
             'experience' => 3.5,
         ]);
 
         TourGuide::create([
             'name' => 'Bob Johnson',
-            'email' => 'bob@example.com',
+            'email' => 'bob1@example.com',
             'phone' => '2223334444',
             'experience' => 5.0,
         ]);
 
         TourGuide::create([
             'name' => 'Carol Williams',
-            'email' => 'carol@example.com',
+            'email' => 'carol1@example.com',
             'phone' => '3334445555',
             'experience' => 2.0,
         ]);
 
         TourGuide::create([
             'name' => 'David Brown',
-            'email' => 'david@example.com',
+            'email' => 'david1@example.com',
             'phone' => '4445556666',
             'experience' => 4.5,
         ]);
 
         TourGuide::create([
             'name' => 'Eve Davis',
-            'email' => 'eve@example.com',
+            'email' => 'eve1@example.com',
             'phone' => '5556667777',
             'experience' => 1.5,
         ]);

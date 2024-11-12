@@ -19,7 +19,7 @@ return new class extends Migration
             $table->enum('gender', ['male','female','other'])->nullable();
             $table->date('dob')->nullable();
             $table->enum('type_customer', ['self','other']);
-            $table->string('nationality',100)->unique()->nullable();
+            $table->string('nationality',100)->nullable();
             $table->string('passport_number',100)->unique()->nullable();
             $table->timestamps();
         });
